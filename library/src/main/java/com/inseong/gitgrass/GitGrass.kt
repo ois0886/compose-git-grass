@@ -123,6 +123,7 @@ fun GitGrass(
 
         if (showMonthLabels) {
             MonthRow(
+                weekCount = grid.size,
                 monthPositions = monthPositions,
                 monthLabels = monthLabels,
                 cellSize = cellSize,

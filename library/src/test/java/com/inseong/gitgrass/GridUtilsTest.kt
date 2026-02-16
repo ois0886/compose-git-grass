@@ -68,7 +68,6 @@ class GridUtilsTest {
         )
         val grid = buildGrid(days)
 
-        // First week: Mon=null, Tue=null, Wed=Jan1, Thu=Jan2, Fri=Jan3, Sat=Jan4, Sun=Jan5
         val firstWeek = grid[0]
         assertEquals(null, firstWeek[0]) // Monday
         assertEquals(null, firstWeek[1]) // Tuesday
@@ -77,7 +76,6 @@ class GridUtilsTest {
 
     @Test
     fun `buildGrid starting on Monday creates no null padding in first week`() {
-        // 2025-01-06 is a Monday
         val monday = LocalDate.of(2025, 1, 6)
         assertEquals(DayOfWeek.MONDAY, monday.dayOfWeek)
 
@@ -85,7 +83,6 @@ class GridUtilsTest {
         val grid = buildGrid(days)
 
         assertEquals(1, grid.size)
-        // All 7 days should be filled
         for (day in grid[0]) {
             assertTrue(day != null)
         }
@@ -93,7 +90,6 @@ class GridUtilsTest {
 
     @Test
     fun `buildGrid full week creates single column`() {
-        // Mon Jan 6 to Sun Jan 12
         val days = generateDayList(
             LocalDate.of(2025, 1, 6),
             LocalDate.of(2025, 1, 12),
@@ -211,7 +207,6 @@ class GridUtilsTest {
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 1, 5),
         )
-        // Jan 1-2 contribute, Jan 3 gap, Jan 4-5 contribute
         val contributions = mapOf(
             LocalDate.of(2025, 1, 1) to 1,
             LocalDate.of(2025, 1, 2) to 1,
@@ -231,12 +226,10 @@ class GridUtilsTest {
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 1, 10),
         )
-        // All days have contributions, but today is Jan 5
         val contributions = days.associateWith { 1 }
 
         val streak = calculateStreak(contributions, days, LocalDate.of(2025, 1, 5))
 
-        // Max streak is 10 (all days), but current streak counts only up to today
         assertEquals(10, streak.maxStreak)
         assertEquals(5, streak.currentStreak)
     }
@@ -253,5 +246,26 @@ class GridUtilsTest {
 
         assertEquals(7, streak.maxStreak)
         assertEquals(7, streak.currentStreak)
+    }
+
+    @Test
+    fun `calculateStreak negative contribution counts are treated as no contribution`() {
+        val days = generateDayList(
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 1, 5),
+        )
+        // Jan 1=positive, Jan 2=negative (should break streak), Jan 3-5=positive
+        val contributions = mapOf(
+            LocalDate.of(2025, 1, 1) to 3,
+            LocalDate.of(2025, 1, 2) to -1,
+            LocalDate.of(2025, 1, 3) to 2,
+            LocalDate.of(2025, 1, 4) to 1,
+            LocalDate.of(2025, 1, 5) to 4,
+        )
+
+        val streak = calculateStreak(contributions, days, LocalDate.of(2025, 1, 5))
+
+        assertEquals(3, streak.maxStreak)
+        assertEquals(3, streak.currentStreak)
     }
 }

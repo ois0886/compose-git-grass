@@ -35,6 +35,8 @@ dependencies {
 }
 
 mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
     coordinates("io.github.ois0886", "compose-git-grass", "0.1.0")
 
     pom {

@@ -44,11 +44,14 @@ internal fun YearLabel(
 /**
  * Horizontal row of month abbreviations that scrolls in sync with the grid.
  *
- * Uses the same [scrollState] as [GrassGridContent] with scrolling disabled,
- * so it follows the grid's scroll position exactly.
+ * Uses the same column layout as [GrassGridContent] — each week is a fixed-width
+ * [cellSize] slot with [cellSpacing] gaps — ensuring pixel-perfect alignment.
+ * The [scrollState] is shared with the grid (scrolling disabled here) so it
+ * follows the grid's scroll position exactly.
  */
 @Composable
 internal fun MonthRow(
+    weekCount: Int,
     monthPositions: List<Pair<Int, Int>>,
     monthLabels: List<String>,
     cellSize: Dp,
@@ -63,27 +66,25 @@ internal fun MonthRow(
             Spacer(modifier = Modifier.width(weekLabelWidth))
         }
 
-        Row(modifier = Modifier.horizontalScroll(scrollState, enabled = false)) {
-            val columnWidth = cellSize + cellSpacing
-            var lastEndX = -1
+        Row(
+            modifier = Modifier.horizontalScroll(scrollState, enabled = false),
+            horizontalArrangement = Arrangement.spacedBy(cellSpacing),
+        ) {
+            val labelMap = monthPositions.associate { (weekIndex, month) -> weekIndex to month }
 
-            for ((weekIndex, monthNumber) in monthPositions) {
-                if (weekIndex <= lastEndX) continue
-
-                val label = monthLabels.getOrElse(monthNumber) { "" }
-                if (label.isEmpty()) continue
-
-                val offsetColumns = if (lastEndX < 0) weekIndex else weekIndex - lastEndX - 1
-                if (offsetColumns > 0) {
-                    Spacer(modifier = Modifier.width(columnWidth * offsetColumns))
+            for (weekIndex in 0 until weekCount) {
+                Box(modifier = Modifier.width(cellSize)) {
+                    val monthNumber = labelMap[weekIndex]
+                    if (monthNumber != null) {
+                        val label = monthLabels.getOrElse(monthNumber) { "" }
+                        if (label.isNotEmpty()) {
+                            BasicText(
+                                text = label,
+                                style = TextStyle(fontSize = fontSize, color = textColor),
+                            )
+                        }
+                    }
                 }
-
-                BasicText(
-                    text = label,
-                    style = TextStyle(fontSize = fontSize, color = textColor),
-                )
-
-                lastEndX = weekIndex
             }
         }
     }
