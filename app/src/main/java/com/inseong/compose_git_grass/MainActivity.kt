@@ -7,11 +7,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.inseong.compose_git_grass.ui.theme.ComposegitgrassTheme
+import com.inseong.gitgrass.GitGrass
+import com.inseong.gitgrass.GitGrassDefaults
+import java.time.LocalDate
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,10 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposegitgrassTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    GitGrassDemo(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -31,17 +32,35 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+fun GitGrassDemo(modifier: Modifier = Modifier) {
+    val contributions = remember { generateSampleData() }
+
+    GitGrass(
+        contributions = contributions,
+        modifier = modifier,
+        showStreak = true,
     )
+}
+
+private fun generateSampleData(): Map<LocalDate, Int> {
+    val random = Random(seed = 42)
+    val start = GitGrassDefaults.startDate()
+    val end = GitGrassDefaults.endDate()
+    val map = mutableMapOf<LocalDate, Int>()
+    var current = start
+    while (!current.isAfter(end)) {
+        if (random.nextFloat() > 0.3f) {
+            map[current] = random.nextInt(1, 15)
+        }
+        current = current.plusDays(1)
+    }
+    return map
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun GitGrassDemoPreview() {
     ComposegitgrassTheme {
-        Greeting("Android")
+        GitGrassDemo()
     }
 }
