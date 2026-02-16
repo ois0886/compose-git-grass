@@ -9,7 +9,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 GitHub 잔디(
 [![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://developer.android.com/about/versions/oreo)
 
 <p align="center">
-  <img src="screenshots/sample.png" width="300" alt="compose-git-grass sample" />
+  <img src="screenshots/sample.png" width="500" alt="compose-git-grass sample" />
 </p>
 
 ## Why?
