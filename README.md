@@ -1,6 +1,6 @@
 # compose-git-grass
 
-Jetpack Compose를 위한 가볍고 독립적인 GitHub 잔디(contribution graph) UI 컴포넌트입니다.
+Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 GitHub 잔디(contribution graph) UI 컴포넌트 라이브러리입니다.
 
 `Map<LocalDate, Int>`만 넘기면 끝입니다.
 
