@@ -43,7 +43,7 @@ mavenPublishing {
         name.set("Compose Git Grass")
         description.set("GitHub contribution graph (grass) UI component for Jetpack Compose")
         url.set("https://github.com/ois0886/compose-git-grass")
-        inceptionYear.set("2025")
+        inceptionYear.set("2026")
 
         licenses {
             license {
