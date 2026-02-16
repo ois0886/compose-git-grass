@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "compose-git-grass"
 include(":app")
+include(":library")
  
