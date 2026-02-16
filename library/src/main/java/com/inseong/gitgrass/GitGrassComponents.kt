@@ -2,7 +2,6 @@ package com.inseong.gitgrass
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import java.time.LocalDate
 
+/** Bold year label displayed above the graph (e.g. "2024 - 2025"). */
 @Composable
 internal fun YearLabel(
     text: String,
@@ -41,6 +41,12 @@ internal fun YearLabel(
     )
 }
 
+/**
+ * Horizontal row of month abbreviations that scrolls in sync with the grid.
+ *
+ * Uses the same [scrollState] as [GrassGridContent] with scrolling disabled,
+ * so it follows the grid's scroll position exactly.
+ */
 @Composable
 internal fun MonthRow(
     monthPositions: List<Pair<Int, Int>>,
@@ -53,20 +59,21 @@ internal fun MonthRow(
     weekLabelWidth: Dp,
 ) {
     Row {
-        Spacer(modifier = Modifier.width(weekLabelWidth))
+        if (weekLabelWidth.value > 0f) {
+            Spacer(modifier = Modifier.width(weekLabelWidth))
+        }
 
         Row(modifier = Modifier.horizontalScroll(scrollState, enabled = false)) {
             val columnWidth = cellSize + cellSpacing
             var lastEndX = -1
 
             for ((weekIndex, monthNumber) in monthPositions) {
-                val x = weekIndex
-                if (x <= lastEndX) continue
+                if (weekIndex <= lastEndX) continue
 
                 val label = monthLabels.getOrElse(monthNumber) { "" }
                 if (label.isEmpty()) continue
 
-                val offsetColumns = if (lastEndX < 0) x else x - lastEndX - 1
+                val offsetColumns = if (lastEndX < 0) weekIndex else weekIndex - lastEndX - 1
                 if (offsetColumns > 0) {
                     Spacer(modifier = Modifier.width(columnWidth * offsetColumns))
                 }
@@ -76,12 +83,19 @@ internal fun MonthRow(
                     style = TextStyle(fontSize = fontSize, color = textColor),
                 )
 
-                lastEndX = x
+                lastEndX = weekIndex
             }
         }
     }
 }
 
+/**
+ * Vertical column of weekday labels (e.g. Mon, Wed, Fri).
+ *
+ * Only even-indexed rows (0, 2, 4, 6) display labels to avoid visual clutter,
+ * matching GitHub's convention of showing Mon/Wed/Fri.
+ * Gracefully handles label lists shorter than 7 by leaving missing slots empty.
+ */
 @Composable
 internal fun WeekLabelColumn(
     weekLabels: List<String>,
@@ -95,7 +109,8 @@ internal fun WeekLabelColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(cellSpacing),
     ) {
-        for ((index, label) in weekLabels.withIndex()) {
+        for (index in 0 until 7) {
+            val label = weekLabels.getOrElse(index) { "" }
             val displayLabel = if (index % 2 == 0) label else ""
             Box(modifier = Modifier.height(cellSize)) {
                 BasicText(
@@ -107,6 +122,7 @@ internal fun WeekLabelColumn(
     }
 }
 
+/** Scrollable grid of contribution cells organized by week columns. */
 @Composable
 internal fun GrassGridContent(
     grid: List<List<LocalDate?>>,
@@ -134,11 +150,7 @@ internal fun GrassGridContent(
                             color = color,
                             size = cellSize,
                             cornerRadius = cellCornerRadius,
-                            onClick = if (onCellClick != null) {
-                                { onCellClick(day, count) }
-                            } else {
-                                null
-                            },
+                            onClick = onCellClick?.let { callback -> { callback(day, count) } },
                         )
                     } else {
                         Spacer(modifier = Modifier.size(cellSize))
@@ -149,6 +161,7 @@ internal fun GrassGridContent(
     }
 }
 
+/** Single rounded-rectangle cell representing one day. */
 @Composable
 internal fun GrassCell(
     color: Color,
@@ -157,32 +170,35 @@ internal fun GrassCell(
     onClick: (() -> Unit)?,
 ) {
     val shape = RoundedCornerShape(cornerRadius)
-    var modifier = Modifier
+    val baseModifier = Modifier
         .size(size)
         .clip(shape)
         .background(color, shape)
 
-    if (onClick != null) {
-        modifier = modifier.clickable(onClick = onClick)
-    }
-
-    Box(modifier = modifier)
+    Box(
+        modifier = if (onClick != null) {
+            baseModifier.clickable(onClick = onClick)
+        } else {
+            baseModifier
+        },
+    )
 }
 
+/** Displays max and current streak counts side by side. */
 @Composable
 internal fun StreakSummary(
     streakInfo: GitGrassStreakInfo,
     maxLabel: String,
     currentLabel: String,
     fontSize: TextUnit,
+    spacing: Dp,
     textColor: Color,
 ) {
-    Row {
+    Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
         BasicText(
             text = "$maxLabel: ${streakInfo.maxStreak}",
             style = TextStyle(fontSize = fontSize, color = textColor),
         )
-        Spacer(modifier = Modifier.width(cellSpacingDefault))
         BasicText(
             text = "$currentLabel: ${streakInfo.currentStreak}",
             style = TextStyle(fontSize = fontSize, color = textColor),
@@ -190,12 +206,13 @@ internal fun StreakSummary(
     }
 }
 
-private val cellSpacingDefault = GitGrassDefaults.cellSpacing
-
-internal fun levelToColor(level: Int, colors: GitGrassColors): Color = when (level) {
-    1 -> colors.level1
-    2 -> colors.level2
-    3 -> colors.level3
-    4 -> colors.level4
-    else -> colors.empty
+/**
+ * Maps a level index to its corresponding color.
+ *
+ * Level 0 (or negative) returns [GitGrassColors.empty].
+ * Positive levels are mapped to [GitGrassColors.levels], clamped to the list bounds.
+ */
+internal fun levelToColor(level: Int, colors: GitGrassColors): Color {
+    if (level <= 0 || colors.levels.isEmpty()) return colors.empty
+    return colors.levels[(level - 1).coerceIn(0, colors.levels.lastIndex)]
 }
