@@ -20,6 +20,17 @@ GitHub contribution graph (grass) UI component library for Jetpack Compose.
 # Build sample app
 ./gradlew :app:assembleDebug
 
+# Run library tests
+./gradlew :library:test
+
+# Generate code coverage report (JaCoCo)
+./gradlew :library:jacocoTestReport
+# → library/build/reports/jacoco/jacocoTestReport/html/
+
+# Generate API documentation (Dokka)
+./gradlew :library:dokkaGenerate
+# → library/build/dokka/html/
+
 # Publish to local Maven (~/.m2)
 ./gradlew :library:publishToMavenLocal
 
@@ -33,6 +44,8 @@ Uses [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/grad
 
 Maven coordinates: `io.github.ois0886:compose-git-grass:<version>`
 
+### 로컬 배포 (수동)
+
 Required credentials in `~/.gradle/gradle.properties`:
 ```properties
 mavenCentralUsername=<Sonatype Central Portal username>
@@ -42,12 +55,61 @@ signing.password=<GPG key passphrase>
 signing.secretKeyRingFile=<path to secring.gpg>
 ```
 
+### 자동 배포 (CI)
+
+`v*` 태그 push 시 `.github/workflows/release.yml`이 자동 실행:
+1. 태그 버전과 `library/build.gradle.kts` 버전 일치 검증
+2. 테스트 실행 → 커버리지 리포트 → API 문서 생성
+3. Maven Central 배포
+4. GitHub Release 생성 (AAR 첨부)
+
+**필요한 GitHub Secrets:**
+- `MAVEN_CENTRAL_USERNAME` / `MAVEN_CENTRAL_PASSWORD`
+- `SIGNING_KEY` (ASCII-armored GPG private key)
+- `SIGNING_KEY_ID` (GPG key ID 마지막 8자)
+- `SIGNING_KEY_PASSWORD` (GPG passphrase)
+
+**릴리즈 절차:**
+```bash
+# 1. library/build.gradle.kts에서 버전 업데이트
+# 2. CHANGELOG.md 업데이트
+# 3. 커밋 후 태그 생성 및 push
+git tag v0.1.2
+git push origin v0.1.2
+```
+
 ## Code Conventions
 
 - Kotlin, Jetpack Compose
 - Min SDK 26, Compile SDK 36
 - Java 11 source/target compatibility
 - Version catalog: `gradle/libs.versions.toml`
+
+## CI/CD
+
+### CI (`.github/workflows/ci.yml`)
+- **트리거**: `main` branch push / PR
+- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 라이브러리 빌드 → 샘플앱 빌드
+- 커버리지 리포트는 GitHub Actions artifact로 업로드
+
+### Release (`.github/workflows/release.yml`)
+- **트리거**: `v*` 태그 push
+- **스텝**: 버전 검증 → 테스트 → 커버리지 → Dokka 문서 → Maven Central 배포 → GitHub Release
+
+## 품질 도구
+
+- **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`)
+- **Dokka 2.0**: API 문서 생성 (`./gradlew :library:dokkaGenerate`)
+- **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙 정의
+- **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
+- **CHANGELOG**: `CHANGELOG.md`에 Keep a Changelog 형식으로 변경 이력 관리
+
+## 테스트 구조
+
+- `library/src/test/` — JUnit 4 유닛 테스트
+  - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산 (28개)
+  - `LevelToColorTest.kt` — 색상 매핑 (8개)
+  - `GridBenchmarkTest.kt` — 성능 벤치마크 (4개)
 
 ## Workflow Rules
 
