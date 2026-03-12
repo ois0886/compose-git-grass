@@ -8,6 +8,70 @@ import java.time.LocalDate
 
 class GridUtilsTest {
 
+    // ── normalizeDateRange ────────────────────────────────────────────
+
+    @Test
+    fun `normalizeDateRange returns same order when start before end`() {
+        val start = LocalDate.of(2025, 1, 1)
+        val end = LocalDate.of(2025, 12, 31)
+        val (s, e) = normalizeDateRange(start, end)
+
+        assertEquals(start, s)
+        assertEquals(end, e)
+    }
+
+    @Test
+    fun `normalizeDateRange swaps when start after end`() {
+        val start = LocalDate.of(2025, 12, 31)
+        val end = LocalDate.of(2025, 1, 1)
+        val (s, e) = normalizeDateRange(start, end)
+
+        assertEquals(end, s)
+        assertEquals(start, e)
+    }
+
+    @Test
+    fun `normalizeDateRange same date returns same pair`() {
+        val date = LocalDate.of(2025, 6, 15)
+        val (s, e) = normalizeDateRange(date, date)
+
+        assertEquals(date, s)
+        assertEquals(date, e)
+    }
+
+    // ── normalizeContributions ────────────────────────────────────────
+
+    @Test
+    fun `normalizeContributions clamps negative values to zero`() {
+        val input = mapOf(
+            LocalDate.of(2025, 1, 1) to -5,
+            LocalDate.of(2025, 1, 2) to 3,
+            LocalDate.of(2025, 1, 3) to -1,
+        )
+        val result = normalizeContributions(input)
+
+        assertEquals(0, result[LocalDate.of(2025, 1, 1)])
+        assertEquals(3, result[LocalDate.of(2025, 1, 2)])
+        assertEquals(0, result[LocalDate.of(2025, 1, 3)])
+    }
+
+    @Test
+    fun `normalizeContributions preserves positive values`() {
+        val input = mapOf(
+            LocalDate.of(2025, 1, 1) to 1,
+            LocalDate.of(2025, 1, 2) to 10,
+        )
+        val result = normalizeContributions(input)
+
+        assertEquals(input, result)
+    }
+
+    @Test
+    fun `normalizeContributions handles empty map`() {
+        val result = normalizeContributions(emptyMap())
+        assertTrue(result.isEmpty())
+    }
+
     // ── generateDayList ─────────────────────────────────────────────────
 
     @Test
@@ -37,6 +101,69 @@ class GridUtilsTest {
         val days = generateDayList(start, end)
 
         assertTrue(days.isEmpty())
+    }
+
+    @Test
+    fun `generateDayList handles leap year Feb 29`() {
+        val start = LocalDate.of(2024, 2, 28)
+        val end = LocalDate.of(2024, 3, 1)
+        val days = generateDayList(start, end)
+
+        assertEquals(3, days.size)
+        assertEquals(LocalDate.of(2024, 2, 29), days[1])
+    }
+
+    // ── dayIndexInWeek ────────────────────────────────────────────────
+
+    @Test
+    fun `dayIndexInWeek Monday-start Monday is 0`() {
+        assertEquals(0, dayIndexInWeek(DayOfWeek.MONDAY, DayOfWeek.MONDAY))
+    }
+
+    @Test
+    fun `dayIndexInWeek Monday-start Sunday is 6`() {
+        assertEquals(6, dayIndexInWeek(DayOfWeek.SUNDAY, DayOfWeek.MONDAY))
+    }
+
+    @Test
+    fun `dayIndexInWeek Sunday-start Sunday is 0`() {
+        assertEquals(0, dayIndexInWeek(DayOfWeek.SUNDAY, DayOfWeek.SUNDAY))
+    }
+
+    @Test
+    fun `dayIndexInWeek Sunday-start Monday is 1`() {
+        assertEquals(1, dayIndexInWeek(DayOfWeek.MONDAY, DayOfWeek.SUNDAY))
+    }
+
+    @Test
+    fun `dayIndexInWeek Sunday-start Saturday is 6`() {
+        assertEquals(6, dayIndexInWeek(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY))
+    }
+
+    // ── weekDaysOrdered ───────────────────────────────────────────────
+
+    @Test
+    fun `weekDaysOrdered Monday-start`() {
+        val days = weekDaysOrdered(DayOfWeek.MONDAY)
+        assertEquals(
+            listOf(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY,
+            ),
+            days,
+        )
+    }
+
+    @Test
+    fun `weekDaysOrdered Sunday-start`() {
+        val days = weekDaysOrdered(DayOfWeek.SUNDAY)
+        assertEquals(
+            listOf(
+                DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY,
+            ),
+            days,
+        )
     }
 
     // ── buildGrid ───────────────────────────────────────────────────────
@@ -98,6 +225,35 @@ class GridUtilsTest {
 
         assertEquals(1, grid.size)
         assertEquals(7, grid[0].filterNotNull().size)
+    }
+
+    @Test
+    fun `buildGrid with Sunday weekStartDay places Sunday first`() {
+        // 2025-01-05 is a Sunday
+        val sunday = LocalDate.of(2025, 1, 5)
+        assertEquals(DayOfWeek.SUNDAY, sunday.dayOfWeek)
+
+        val days = generateDayList(sunday, LocalDate.of(2025, 1, 11))
+        val grid = buildGrid(days, DayOfWeek.SUNDAY)
+
+        assertEquals(1, grid.size)
+        assertEquals(sunday, grid[0][0]) // Sunday at index 0
+        assertEquals(LocalDate.of(2025, 1, 11), grid[0][6]) // Saturday at index 6
+    }
+
+    @Test
+    fun `buildGrid with Sunday weekStartDay Wednesday is at index 3`() {
+        val wednesday = LocalDate.of(2025, 1, 1)
+        assertEquals(DayOfWeek.WEDNESDAY, wednesday.dayOfWeek)
+
+        val days = generateDayList(wednesday, wednesday)
+        val grid = buildGrid(days, DayOfWeek.SUNDAY)
+
+        assertEquals(1, grid.size)
+        assertEquals(null, grid[0][0]) // Sunday
+        assertEquals(null, grid[0][1]) // Monday
+        assertEquals(null, grid[0][2]) // Tuesday
+        assertEquals(wednesday, grid[0][3]) // Wednesday
     }
 
     // ── createMonthLabels ───────────────────────────────────────────────

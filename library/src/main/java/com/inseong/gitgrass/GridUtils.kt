@@ -1,6 +1,30 @@
 package com.inseong.gitgrass
 
+import java.time.DayOfWeek
 import java.time.LocalDate
+
+/**
+ * Normalizes a date range by swapping if [start] is after [end].
+ *
+ * @return Pair of (normalizedStart, normalizedEnd) where start <= end.
+ */
+internal fun normalizeDateRange(
+    start: LocalDate,
+    end: LocalDate,
+): Pair<LocalDate, LocalDate> {
+    return if (start.isAfter(end)) end to start else start to end
+}
+
+/**
+ * Clamps all negative contribution counts to 0.
+ *
+ * Returns the original map unchanged if no negative values exist.
+ */
+internal fun normalizeContributions(
+    contributions: Map<LocalDate, Int>,
+): Map<LocalDate, Int> {
+    return contributions.mapValues { (_, v) -> v.coerceAtLeast(0) }
+}
 
 /**
  * Generates a sequential list of dates from [start] to [end] (inclusive).
@@ -20,21 +44,26 @@ internal fun generateDayList(start: LocalDate, end: LocalDate): List<LocalDate> 
 }
 
 /**
- * Builds a grid of weeks (columns) where each week has 7 rows (Mon=0, Sun=6).
+ * Builds a grid of weeks (columns) where each week has 7 rows.
  *
  * The first and last weeks may contain `null` entries for days outside the
  * [start, end] range, ensuring the grid always has complete 7-day columns.
  *
+ * @param days Sorted list of dates to arrange into weeks.
+ * @param weekStartDay The first day of the week (default: Monday).
  * @return List of weeks, each week being a list of 7 nullable [LocalDate]s.
  */
-internal fun buildGrid(days: List<LocalDate>): List<List<LocalDate?>> {
+internal fun buildGrid(
+    days: List<LocalDate>,
+    weekStartDay: DayOfWeek = DayOfWeek.MONDAY,
+): List<List<LocalDate?>> {
     if (days.isEmpty()) return emptyList()
 
     val weeks = mutableListOf<MutableList<LocalDate?>>()
     var currentWeek = MutableList<LocalDate?>(7) { null }
 
     for (day in days) {
-        val dayIndex = day.dayOfWeek.value - 1 // Monday=0, Sunday=6
+        val dayIndex = dayIndexInWeek(day.dayOfWeek, weekStartDay)
         if (dayIndex == 0 && currentWeek.any { it != null }) {
             weeks.add(currentWeek)
             currentWeek = MutableList(7) { null }
@@ -47,6 +76,25 @@ internal fun buildGrid(days: List<LocalDate>): List<List<LocalDate?>> {
     }
 
     return weeks
+}
+
+/**
+ * Calculates the index of [dayOfWeek] within a week starting on [weekStartDay].
+ *
+ * For example, if weekStartDay is MONDAY, then Monday=0, Tuesday=1, ..., Sunday=6.
+ * If weekStartDay is SUNDAY, then Sunday=0, Monday=1, ..., Saturday=6.
+ */
+internal fun dayIndexInWeek(dayOfWeek: DayOfWeek, weekStartDay: DayOfWeek): Int {
+    return (dayOfWeek.value - weekStartDay.value + 7) % 7
+}
+
+/**
+ * Returns an ordered list of [DayOfWeek] starting from [weekStartDay].
+ */
+internal fun weekDaysOrdered(weekStartDay: DayOfWeek): List<DayOfWeek> {
+    return (0 until 7).map { offset ->
+        DayOfWeek.of((weekStartDay.value - 1 + offset) % 7 + 1)
+    }
 }
 
 /**

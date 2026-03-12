@@ -7,7 +7,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Month
+import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 
 /**
  * Default values for [GitGrass] composable parameters.
@@ -55,6 +58,34 @@ object GitGrassDefaults {
     /** English weekday labels, Monday-first order. */
     val weekLabels: List<String> = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
+    /**
+     * Returns localized month labels using the device's default locale.
+     *
+     * Index 0 is empty so that `monthLabels[date.monthValue]` maps directly.
+     *
+     * @param locale Locale to use for month name formatting. Defaults to [Locale.getDefault].
+     */
+    fun localizedMonthLabels(locale: Locale = Locale.getDefault()): List<String> {
+        return listOf("") + Month.entries.map { month ->
+            month.getDisplayName(TextStyle.SHORT, locale)
+        }
+    }
+
+    /**
+     * Returns localized weekday labels starting from [weekStartDay].
+     *
+     * @param weekStartDay First day of the week. Defaults to [DayOfWeek.MONDAY].
+     * @param locale Locale to use for weekday name formatting. Defaults to [Locale.getDefault].
+     */
+    fun localizedWeekLabels(
+        weekStartDay: DayOfWeek = DayOfWeek.MONDAY,
+        locale: Locale = Locale.getDefault(),
+    ): List<String> {
+        return weekDaysOrdered(weekStartDay).map { day ->
+            day.getDisplayName(TextStyle.SHORT, locale)
+        }
+    }
+
     val cellSize: Dp = 12.dp
     val cellSpacing: Dp = 3.dp
     val cellCornerRadius: Dp = 2.dp
@@ -79,13 +110,15 @@ object GitGrassDefaults {
     }
 
     /**
-     * Default start date: 1 year ago from today, adjusted back to the nearest Monday
+     * Default start date: 1 year ago from today, adjusted back to the nearest [weekStartDay]
      * so the grid starts on a clean week boundary.
+     *
+     * @param weekStartDay First day of the week. Defaults to [DayOfWeek.MONDAY].
      */
-    fun startDate(): LocalDate {
+    fun startDate(weekStartDay: DayOfWeek = DayOfWeek.MONDAY): LocalDate {
         return LocalDate.now()
             .minusYears(1)
-            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            .with(TemporalAdjusters.previousOrSame(weekStartDay))
     }
 
     /** Default end date: today. */

@@ -28,9 +28,11 @@ GitHub의 잔디 그래프는 활동량을 한눈에 보여주는 훌륭한 시�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-git-grass:0.1.1")
+    implementation("io.github.ois0886:compose-git-grass:1.0.0")
 }
 ```
+
+> **0.1.x에서 마이그레이션**: 기본 API는 동일합니다. 새 파라미터(`weekStartDay`, `showLegend`, `onCellLongClick` 등)가 추가되었으며 모두 기본값이 있어 기존 코드가 그대로 동작합니다.
 
 ## Quick Start
 
@@ -45,11 +47,12 @@ GitGrass(
 ```
 
 ```kotlin
-// 다크모드 + 스트릭 + 셀 클릭
+// 다크모드 + 스트릭 + 셀 클릭 + 범례
 GitGrass(
     contributions = data,
     colors = GitGrassDefaults.darkColors(),
     showStreak = true,
+    showLegend = true,
     onCellClick = { date, count ->
         println("$date: ${count}회 기여")
     },
@@ -94,7 +97,7 @@ GitGrass(
 ### Localization
 
 ```kotlin
-// 한국어 라벨
+// 한국어 라벨 (수동)
 GitGrass(
     contributions = data,
     weekLabels = listOf("월", "화", "수", "목", "금", "토", "일"),
@@ -103,6 +106,39 @@ GitGrass(
     showStreak = true,
     streakMaxLabel = "최대 연속",
     streakCurrentLabel = "현재 연속",
+    lessLabel = "적음",
+    moreLabel = "많음",
+)
+```
+
+```kotlin
+// 디바이스 로케일 자동 감지 (1.0.0 신규)
+GitGrass(
+    contributions = data,
+    monthLabels = GitGrassDefaults.localizedMonthLabels(),
+    weekLabels = GitGrassDefaults.localizedWeekLabels(),
+)
+```
+
+### Week Start Day (1.0.0 신규)
+
+```kotlin
+// 일요일 시작
+GitGrass(
+    contributions = data,
+    weekStartDay = DayOfWeek.SUNDAY,
+    startDate = GitGrassDefaults.startDate(DayOfWeek.SUNDAY),
+    weekLabels = GitGrassDefaults.localizedWeekLabels(DayOfWeek.SUNDAY),
+)
+```
+
+### Long Press (1.0.0 신규)
+
+```kotlin
+GitGrass(
+    contributions = data,
+    onCellClick = { date, count -> /* 탭 */ },
+    onCellLongClick = { date, count -> /* 롱프레스 - 툴팁 표시 등 */ },
 )
 ```
 
@@ -127,6 +163,7 @@ GitGrass(
     showWeekLabels = false,
     showMonthLabels = true,
     showStreak = true,
+    showLegend = true,
 )
 ```
 
@@ -137,11 +174,12 @@ GitGrass(
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `contributions` | `Map<LocalDate, Int>` | *필수* | 날짜별 기여 횟수 |
-| `startDate` | `LocalDate` | ~1년 전 (월요일) | 그래프 시작 날짜 |
+| `startDate` | `LocalDate` | ~1년 전 (주 시작일 정렬) | 그래프 시작 날짜 |
 | `endDate` | `LocalDate` | 오늘 | 그래프 끝 날짜 |
+| `weekStartDay` | `DayOfWeek` | MONDAY | 주 시작 요일 |
 | `colors` | `GitGrassColors` | GitHub 라이트 | 색상 스킴 |
 | `monthLabels` | `List<String>` | 영어 | 월 이름 (인덱스 0 미사용) |
-| `weekLabels` | `List<String>` | 영어 | 요일 이름 (월요일 시작) |
+| `weekLabels` | `List<String>` | 영어 | 요일 이름 |
 | `cellSize` | `Dp` | 12.dp | 셀 크기 |
 | `cellSpacing` | `Dp` | 3.dp | 셀 간격 |
 | `cellCornerRadius` | `Dp` | 2.dp | 셀 모서리 반경 |
@@ -150,10 +188,14 @@ GitGrass(
 | `showWeekLabels` | `Boolean` | true | 요일 라벨 표시 |
 | `showMonthLabels` | `Boolean` | true | 월 라벨 표시 |
 | `showStreak` | `Boolean` | false | 스트릭 요약 표시 |
+| `showLegend` | `Boolean` | true | 색상 범례 표시 |
 | `streakMaxLabel` | `String` | "Max streak" | 최대 스트릭 라벨 |
 | `streakCurrentLabel` | `String` | "Current streak" | 현재 스트릭 라벨 |
+| `lessLabel` | `String` | "Less" | 범례 "적음" 라벨 |
+| `moreLabel` | `String` | "More" | 범례 "많음" 라벨 |
 | `levelOf` | `(Int) -> Int` | 0/1-3/4-6/7-9/10+ | 기여 횟수 → 레벨 매핑 |
 | `onCellClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 탭 콜백 |
+| `onCellLongClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 롱프레스 콜백 |
 
 ### `GitGrassColors`
 
@@ -173,13 +215,20 @@ GitGrass(
 - **누락된 날짜** - 기여 0회로 처리
 - **짧은 라벨 리스트** - 부족한 항목은 빈 문자열로 대체
 
+## Accessibility (1.0.0 신규)
+
+- 모든 셀에 `contentDescription` 제공 (스크린 리더 지원)
+- 클릭 가능한 셀에 `Role.Button` 및 `onClickLabel` 설정
+- 그래프 루트에 "Contribution graph" semantics 적용
+
 ## Development Highlights
 
 - **Pure Compose Foundation** - Material3 의존 없이 Foundation의 `BasicText`만 사용하여, 어떤 디자인 시스템을 쓰는 프로젝트에서도 충돌 없이 동작합니다.
 - **유연한 색상 레벨** - 고정된 `level1`~`level4` 대신 `levels: List<Color>`를 사용합니다. 3단계든, 5단계든, 10단계든 자유롭게 지정할 수 있습니다.
 - **픽셀 단위 월 라벨 정렬** - 월 라벨이 그리드와 동일한 `Arrangement.spacedBy` + 고정 너비 슬롯 구조를 사용하여, 어떤 셀 크기에서도 정확하게 정렬됩니다.
 - **공유 ScrollState** - 월 라벨 행과 그리드가 하나의 `ScrollState`를 공유하여 가로 스크롤 시 항상 동기화됩니다.
-- **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 28개의 유닛 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스를 검증합니다.
+- **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 60+ 유닛 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스를 검증합니다.
+- **접근성** - 모든 셀에 contentDescription, semantics 적용으로 스크린 리더를 지원합니다.
 - **오늘 날짜로 자동 스크롤** - `LaunchedEffect`로 첫 컴포지션 시 가장 최근 날짜(오른쪽 끝)로 자동 스크롤됩니다.
 
 ## Requirements

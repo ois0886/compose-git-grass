@@ -74,8 +74,8 @@ signing.secretKeyRingFile=<path to secring.gpg>
 # 1. library/build.gradle.kts에서 버전 업데이트
 # 2. CHANGELOG.md 업데이트
 # 3. 커밋 후 태그 생성 및 push
-git tag v0.1.2
-git push origin v0.1.2
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 ## Code Conventions
@@ -104,10 +104,20 @@ git push origin v0.1.2
 - **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
 - **CHANGELOG**: `CHANGELOG.md`에 Keep a Changelog 형식으로 변경 이력 관리
 
+## 라이브러리 소스 구조
+
+- `library/src/main/java/com/inseong/gitgrass/`
+  - `GitGrass.kt` — 메인 컴포저블 (public API)
+  - `GitGrassColors.kt` — 색상 스킴 데이터 클래스
+  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, GrassWeekColumn, GrassCell, StreakSummary, ColorLegend)
+  - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일)
+  - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
+
 ## 테스트 구조
 
 - `library/src/test/` — JUnit 4 유닛 테스트
-  - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산 (28개)
+  - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산, 입력 정규화, 주 시작일
+  - `GitGrassDefaultsTest.kt` — startDate, endDate, levelThresholds, 로케일 라벨, 색상
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
   - `GridBenchmarkTest.kt` — 성능 벤치마크 (4개)
 

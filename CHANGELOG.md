@@ -7,12 +7,39 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-12
+
 ### Added
+- **색상 범례 (Legend)**: "Less ↔ More" 색상 범례 표시 (`showLegend`, `lessLabel`, `moreLabel`)
+- **로케일 대응**: `localizedMonthLabels()`, `localizedWeekLabels()` — 디바이스 로케일 기반 월/요일 라벨
+- **주 시작일 커스텀**: `weekStartDay` 파라미터로 월요일/일요일 등 설정 가능
+- **롱 프레스 콜백**: `onCellLongClick` 파라미터 추가
+- **접근성**: 모든 셀에 `contentDescription`, `semantics`, `onClickLabel` 추가 (스크린 리더 지원)
+- **그래프 접근성**: 루트 컴포저블에 "Contribution graph" semantics 추가
+- `normalizeContributions()`, `normalizeDateRange()` 순수 함수 추출
+- `dayIndexInWeek()`, `weekDaysOrdered()` 유틸리티 함수 추가
+- `GrassWeekColumn` 컴포저블 분리 (관심사 분리)
+- `GitGrassDefaultsTest` 테스트 스위트 신규 추가
+- 윤년, 주 시작일 관련 테스트 케이스 추가
+
+### Changed
+- `GitGrass` 컴포저블 입력 검증을 순수 함수 호출로 리팩토링
+- `MonthRow`의 `labelMap`을 `remember`로 메모이제이션 (성능 최적화)
+- `GrassCell`의 `RoundedCornerShape`를 `remember`로 메모이제이션 (성능 최적화)
+- `StreakSummary`의 텍스트를 `remember`로 메모이제이션
+- `GrassGridContent`를 `GrassWeekColumn` 단위로 분리 (관심사 분리)
+- `buildGrid()`에 `weekStartDay` 파라미터 추가
+- `GitGrassDefaults.startDate()`에 `weekStartDay` 파라미터 추가
+
+### Deprecated
+- 0.1.x 버전은 더 이상 지원하지 않습니다. 1.0.0으로 업그레이드하세요.
+
+### Infrastructure
 - CHANGELOG.md 추가
 - ProGuard consumer rules 추가 (라이브러리 public API 보호)
 - 성능 벤치마크 테스트 추가 (1000+ 데이터 포인트)
 - JaCoCo 코드 커버리지 설정
-- Dokka API 문서 생성 설정
+- Dokka 2.0 API 문서 생성 설정
 - 릴리즈 자동화 GitHub Actions 워크플로우 추가
 
 ## [0.1.1] - 2026-02-16
@@ -40,6 +67,7 @@
 - 월 라벨 위치 결정 (`createMonthLabels`)
 - 연도 라벨 포맷팅 (`formatYearLabel`)
 
-[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ois0886/compose-git-grass/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/ois0886/compose-git-grass/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ois0886/compose-git-grass/releases/tag/v0.1.0
