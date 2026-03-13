@@ -93,6 +93,7 @@ val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
 
 // X: 단순 값에 불필요한 remember
 val label = remember { "Less" }  // 불필요
+val text = remember(name, count) { "$name: $count" }  // 문자열 연결은 저비용
 ```
 
 ### Modifier 패턴

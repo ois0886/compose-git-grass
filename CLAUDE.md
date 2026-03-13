@@ -82,7 +82,7 @@ git push origin v1.0.0
 
 - Kotlin, Jetpack Compose
 - Min SDK 26, Compile SDK 36
-- Java 11 source/target compatibility
+- Java 11 source/target compatibility (CI: JDK 17)
 - Version catalog: `gradle/libs.versions.toml`
 
 ## CI/CD

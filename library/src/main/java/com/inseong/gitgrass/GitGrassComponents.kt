@@ -222,7 +222,7 @@ internal fun GrassCell(
     onLongClick: (() -> Unit)? = null,
 ) {
     val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
-    val description = remember(date, count) { "$date: ${count}건" }
+    val description = "$date: ${count}건"
 
     val baseModifier = Modifier
         .size(size)
@@ -258,12 +258,8 @@ internal fun StreakSummary(
     spacing: Dp,
     textColor: Color,
 ) {
-    val maxText = remember(maxLabel, streakInfo.maxStreak) {
-        "$maxLabel: ${streakInfo.maxStreak}"
-    }
-    val currentText = remember(currentLabel, streakInfo.currentStreak) {
-        "$currentLabel: ${streakInfo.currentStreak}"
-    }
+    val maxText = "$maxLabel: ${streakInfo.maxStreak}"
+    val currentText = "$currentLabel: ${streakInfo.currentStreak}"
 
     Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
         BasicText(
