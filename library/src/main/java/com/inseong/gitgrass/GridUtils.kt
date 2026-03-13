@@ -1,5 +1,6 @@
 package com.inseong.gitgrass
 
+import com.inseong.gitgrass.GitGrassDefaults.DAYS_PER_WEEK
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -21,8 +22,8 @@ internal fun normalizeDateRange(
  * Returns the original map unchanged if no negative values exist.
  */
 internal fun normalizeContributions(
-    contributions: Map<LocalDate, Int>,
-): Map<LocalDate, Int> {
+    contributions: ContributionData,
+): ContributionData {
     return contributions.mapValues { (_, v) -> v.coerceAtLeast(0) }
 }
 
@@ -44,29 +45,29 @@ internal fun generateDayList(start: LocalDate, end: LocalDate): List<LocalDate> 
 }
 
 /**
- * Builds a grid of weeks (columns) where each week has 7 rows.
+ * Builds a grid of weeks (columns) where each week has [DAYS_PER_WEEK] rows.
  *
  * The first and last weeks may contain `null` entries for days outside the
  * [start, end] range, ensuring the grid always has complete 7-day columns.
  *
  * @param days Sorted list of dates to arrange into weeks.
  * @param weekStartDay The first day of the week (default: Monday).
- * @return List of weeks, each week being a list of 7 nullable [LocalDate]s.
+ * @return List of weeks, each week being a list of [DAYS_PER_WEEK] nullable [LocalDate]s.
  */
 internal fun buildGrid(
     days: List<LocalDate>,
     weekStartDay: DayOfWeek = DayOfWeek.MONDAY,
-): List<List<LocalDate?>> {
+): Grid {
     if (days.isEmpty()) return emptyList()
 
     val weeks = mutableListOf<MutableList<LocalDate?>>()
-    var currentWeek = MutableList<LocalDate?>(7) { null }
+    var currentWeek = MutableList<LocalDate?>(DAYS_PER_WEEK) { null }
 
     for (day in days) {
         val dayIndex = dayIndexInWeek(day.dayOfWeek, weekStartDay)
         if (dayIndex == 0 && currentWeek.any { it != null }) {
             weeks.add(currentWeek)
-            currentWeek = MutableList(7) { null }
+            currentWeek = MutableList(DAYS_PER_WEEK) { null }
         }
         currentWeek[dayIndex] = day
     }
@@ -85,15 +86,15 @@ internal fun buildGrid(
  * If weekStartDay is SUNDAY, then Sunday=0, Monday=1, ..., Saturday=6.
  */
 internal fun dayIndexInWeek(dayOfWeek: DayOfWeek, weekStartDay: DayOfWeek): Int {
-    return (dayOfWeek.value - weekStartDay.value + 7) % 7
+    return (dayOfWeek.value - weekStartDay.value + DAYS_PER_WEEK) % DAYS_PER_WEEK
 }
 
 /**
  * Returns an ordered list of [DayOfWeek] starting from [weekStartDay].
  */
 internal fun weekDaysOrdered(weekStartDay: DayOfWeek): List<DayOfWeek> {
-    return (0 until 7).map { offset ->
-        DayOfWeek.of((weekStartDay.value - 1 + offset) % 7 + 1)
+    return (0 until DAYS_PER_WEEK).map { offset ->
+        DayOfWeek.of((weekStartDay.value - 1 + offset) % DAYS_PER_WEEK + 1)
     }
 }
 
@@ -104,7 +105,7 @@ internal fun weekDaysOrdered(weekStartDay: DayOfWeek): List<DayOfWeek> {
  * changes. Each entry is a pair of (weekIndex, monthNumber) where monthNumber
  * follows [java.time.LocalDate.getMonthValue] (1=Jan, 12=Dec).
  */
-internal fun createMonthLabels(grid: List<List<LocalDate?>>): List<Pair<Int, Int>> {
+internal fun createMonthLabels(grid: Grid): MonthPositions {
     val result = mutableListOf<Pair<Int, Int>>()
     var lastMonth = -1
 
@@ -135,46 +136,47 @@ internal fun formatYearLabel(start: LocalDate, end: LocalDate): String {
 }
 
 /**
- * Calculates max and current contribution streaks.
+ * Calculates max and current contribution streaks in a single forward pass.
  *
  * A streak is a sequence of consecutive days with at least one contribution.
- * The current streak counts backward from [today] (or the last day in [days]
- * that is not after [today]).
+ * The current streak counts the consecutive contributing days ending at [today]
+ * (or the last day in [days] that is not after [today]).
  *
  * @param contributions Map of dates to contribution counts.
  * @param days Sorted list of dates to examine.
  * @param today Reference date for current streak calculation.
  */
 internal fun calculateStreak(
-    contributions: Map<LocalDate, Int>,
+    contributions: ContributionData,
     days: List<LocalDate>,
     today: LocalDate = LocalDate.now(),
 ): GitGrassStreakInfo {
     if (days.isEmpty()) return GitGrassStreakInfo(maxStreak = 0, currentStreak = 0)
 
-    // Max streak: longest consecutive run of contributing days
     var maxStreak = 0
     var runLength = 0
+    var currentRunLength = 0
+
     for (day in days) {
-        if ((contributions[day] ?: 0) > 0) {
+        val hasContribution = (contributions[day] ?: 0) > 0
+
+        // ── Max streak: track across all days ────────────────────────
+        if (hasContribution) {
             runLength++
             if (runLength > maxStreak) maxStreak = runLength
         } else {
             runLength = 0
         }
-    }
 
-    // Current streak: count backward from today
-    var currentStreak = 0
-    for (i in days.indices.reversed()) {
-        val day = days[i]
-        if (day.isAfter(today)) continue
-        if ((contributions[day] ?: 0) > 0) {
-            currentStreak++
-        } else {
-            break
+        // ── Current streak: track only for days up to today ─────────
+        if (!day.isAfter(today)) {
+            if (hasContribution) {
+                currentRunLength++
+            } else {
+                currentRunLength = 0
+            }
         }
     }
 
-    return GitGrassStreakInfo(maxStreak = maxStreak, currentStreak = currentStreak)
+    return GitGrassStreakInfo(maxStreak = maxStreak, currentStreak = currentRunLength)
 }

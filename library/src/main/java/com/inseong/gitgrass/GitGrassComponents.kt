@@ -3,7 +3,6 @@ package com.inseong.gitgrass
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import com.inseong.gitgrass.GitGrassDefaults.DAYS_PER_WEEK
 import java.time.LocalDate
 
 /** Bold year label displayed above the graph (e.g. "2024 - 2025"). */
@@ -61,7 +61,7 @@ internal fun YearLabel(
 @Composable
 internal fun MonthRow(
     weekCount: Int,
-    monthPositions: List<Pair<Int, Int>>,
+    monthPositions: MonthPositions,
     monthLabels: List<String>,
     cellSize: Dp,
     cellSpacing: Dp,
@@ -122,7 +122,7 @@ internal fun WeekLabelColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(cellSpacing),
     ) {
-        for (index in 0 until 7) {
+        for (index in 0 until DAYS_PER_WEEK) {
             val label = weekLabels.getOrElse(index) { "" }
             val displayLabel = if (index % 2 == 0) label else ""
             Box(modifier = Modifier.height(cellSize)) {
@@ -138,14 +138,16 @@ internal fun WeekLabelColumn(
 /** Scrollable grid of contribution cells organized by week columns. */
 @Composable
 internal fun GrassGridContent(
-    grid: List<List<LocalDate?>>,
-    contributions: Map<LocalDate, Int>,
+    grid: Grid,
+    contributions: ContributionData,
     colors: GitGrassColors,
     cellSize: Dp,
     cellSpacing: Dp,
     cellCornerRadius: Dp,
     levelOf: (Int) -> Int,
     scrollState: ScrollState,
+    cellContentDescription: (LocalDate, Int) -> String,
+    cellClickLabel: (LocalDate) -> String,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
@@ -162,6 +164,8 @@ internal fun GrassGridContent(
                 cellSpacing = cellSpacing,
                 cellCornerRadius = cellCornerRadius,
                 levelOf = levelOf,
+                cellContentDescription = cellContentDescription,
+                cellClickLabel = cellClickLabel,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )
@@ -169,16 +173,18 @@ internal fun GrassGridContent(
     }
 }
 
-/** A single week column of 7 day cells. */
+/** A single week column of [DAYS_PER_WEEK] day cells. */
 @Composable
 internal fun GrassWeekColumn(
     week: List<LocalDate?>,
-    contributions: Map<LocalDate, Int>,
+    contributions: ContributionData,
     colors: GitGrassColors,
     cellSize: Dp,
     cellSpacing: Dp,
     cellCornerRadius: Dp,
     levelOf: (Int) -> Int,
+    cellContentDescription: (LocalDate, Int) -> String,
+    cellClickLabel: (LocalDate) -> String,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
@@ -194,6 +200,8 @@ internal fun GrassWeekColumn(
                     cornerRadius = cellCornerRadius,
                     date = day,
                     count = count,
+                    contentDescriptionText = cellContentDescription(day, count),
+                    clickLabelText = cellClickLabel(day),
                     onClick = onCellClick?.let { callback -> { callback(day, count) } },
                     onLongClick = onCellLongClick?.let { callback -> { callback(day, count) } },
                 )
@@ -218,18 +226,19 @@ internal fun GrassCell(
     cornerRadius: Dp,
     date: LocalDate,
     count: Int,
+    contentDescriptionText: String,
+    clickLabelText: String,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)? = null,
 ) {
     val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
-    val description = "$date: ${count}건"
 
     val baseModifier = Modifier
         .size(size)
         .clip(shape)
         .background(color, shape)
         .semantics {
-            contentDescription = description
+            contentDescription = contentDescriptionText
             if (onClick != null) {
                 role = Role.Button
             }
@@ -240,7 +249,7 @@ internal fun GrassCell(
             baseModifier.combinedClickable(
                 onClick = onClick ?: {},
                 onLongClick = onLongClick,
-                onClickLabel = "$date 상세보기",
+                onClickLabel = clickLabelText,
             )
         } else {
             baseModifier

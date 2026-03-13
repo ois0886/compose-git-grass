@@ -405,6 +405,54 @@ class GridUtilsTest {
     }
 
     @Test
+    fun `createMonthLabels month boundary transition at week start`() {
+        val days = generateDayList(
+            LocalDate.of(2025, 1, 27),
+            LocalDate.of(2025, 2, 9),
+        )
+        val grid = buildGrid(days)
+        val labels = createMonthLabels(grid)
+
+        val months = labels.map { it.second }
+        assertEquals(listOf(1, 2), months)
+        assertTrue(labels[1].first > labels[0].first)
+    }
+
+    // ── calculateStreak (additional) ─────────────────────────────────
+
+    @Test
+    fun `calculateStreak single contributing day returns max=1 current=1`() {
+        val day = LocalDate.of(2025, 6, 15)
+        val days = listOf(day)
+        val contributions = mapOf(day to 3)
+
+        val streak = calculateStreak(contributions, days, day)
+
+        assertEquals(1, streak.maxStreak)
+        assertEquals(1, streak.currentStreak)
+    }
+
+    @Test
+    fun `calculateStreak contributions outside days range are ignored`() {
+        val days = generateDayList(
+            LocalDate.of(2025, 1, 3),
+            LocalDate.of(2025, 1, 5),
+        )
+        val contributions = mapOf(
+            LocalDate.of(2025, 1, 1) to 5,
+            LocalDate.of(2025, 1, 2) to 5,
+            LocalDate.of(2025, 1, 3) to 1,
+            LocalDate.of(2025, 1, 4) to 1,
+            LocalDate.of(2025, 1, 5) to 1,
+        )
+
+        val streak = calculateStreak(contributions, days, LocalDate.of(2025, 1, 5))
+
+        assertEquals(3, streak.maxStreak)
+        assertEquals(3, streak.currentStreak)
+    }
+
+    @Test
     fun `calculateStreak negative contribution counts are treated as no contribution`() {
         val days = generateDayList(
             LocalDate.of(2025, 1, 1),

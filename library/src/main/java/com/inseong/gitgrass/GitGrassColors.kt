@@ -11,12 +11,16 @@ import androidx.compose.ui.graphics.Color
  *   The size determines how many distinct levels the graph displays.
  *   For example, GitHub uses 4 levels by default.
  * @param text Color used for all label text (year, month, week, streak).
- * @param border Color used for cell borders when enabled.
+ * @param border Deprecated. Not used in rendering. Will be removed in 2.0.0.
  */
 @Immutable
 data class GitGrassColors(
     val empty: Color,
     val levels: List<Color>,
     val text: Color,
-    val border: Color,
+    @Deprecated(
+        message = "Not used in rendering. Will be removed in 2.0.0.",
+        level = DeprecationLevel.WARNING,
+    )
+    val border: Color = Color.Transparent,
 )

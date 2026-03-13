@@ -18,7 +18,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -66,6 +65,10 @@ data class GitGrassStreakInfo(
  * @param streakCurrentLabel Text prefix for current streak display.
  * @param lessLabel Text for "Less" in the color legend.
  * @param moreLabel Text for "More" in the color legend.
+ * @param cellContentDescription Formats the accessibility content description for each cell.
+ *   Receives the cell's date and contribution count. Default: `"$date: $count"`.
+ * @param cellClickLabel Formats the accessibility click label for each cell.
+ *   Receives the cell's date. Default: `"$date details"`.
  * @param levelOf Maps a contribution count to a color level index (0 = empty, 1+ = [GitGrassColors.levels]).
  * @param onCellClick Optional callback invoked when a cell is tapped, receiving the date and count.
  * @param onCellLongClick Optional callback invoked when a cell is long-pressed, receiving the date and count.
@@ -93,6 +96,10 @@ fun GitGrass(
     streakCurrentLabel: String = "Current streak",
     lessLabel: String = "Less",
     moreLabel: String = "More",
+    cellContentDescription: (date: LocalDate, count: Int) -> String = { date, count ->
+        "$date: $count"
+    },
+    cellClickLabel: (date: LocalDate) -> String = { date -> "$date details" },
     levelOf: (count: Int) -> Int = GitGrassDefaults.levelThresholds,
     onCellClick: ((date: LocalDate, count: Int) -> Unit)? = null,
     onCellLongClick: ((date: LocalDate, count: Int) -> Unit)? = null,
@@ -118,7 +125,7 @@ fun GitGrass(
         scrollState.scrollTo(scrollState.maxValue)
     }
 
-    val weekLabelWidth = if (showWeekLabels) 28.dp else 0.dp
+    val weekLabelWidth = if (showWeekLabels) GitGrassDefaults.weekLabelWidth else 0.dp
 
     Column(
         modifier = modifier.semantics {
@@ -131,7 +138,7 @@ fun GitGrass(
                 fontSize = GitGrassDefaults.yearLabelFontSize,
                 textColor = colors.text,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(GitGrassDefaults.yearLabelBottomSpacing))
         }
 
         if (showMonthLabels) {
@@ -146,7 +153,7 @@ fun GitGrass(
                 scrollState = scrollState,
                 weekLabelWidth = weekLabelWidth,
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(GitGrassDefaults.monthRowBottomSpacing))
         }
 
         Row {
@@ -170,25 +177,27 @@ fun GitGrass(
                 cellCornerRadius = cellCornerRadius,
                 levelOf = levelOf,
                 scrollState = scrollState,
+                cellContentDescription = cellContentDescription,
+                cellClickLabel = cellClickLabel,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )
         }
 
         if (showStreak) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(GitGrassDefaults.streakTopSpacing))
             StreakSummary(
                 streakInfo = streakInfo,
                 maxLabel = streakMaxLabel,
                 currentLabel = streakCurrentLabel,
                 fontSize = labelFontSize,
-                spacing = 16.dp,
+                spacing = GitGrassDefaults.streakItemSpacing,
                 textColor = colors.text,
             )
         }
 
         if (showLegend) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(GitGrassDefaults.legendTopSpacing))
             Row(
                 modifier = Modifier.width(
                     weekLabelWidth + (cellSize + cellSpacing) * grid.size.coerceAtLeast(1),

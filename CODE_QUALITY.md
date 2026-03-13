@@ -274,15 +274,16 @@ val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
 - 클릭 가능한 요소에는 `onClickLabel`을 제공한다.
 
 ```kotlin
+// cellContentDescription, cellClickLabel은 GitGrass() 파라미터로 주입
 Box(
     modifier = baseModifier
         .combinedClickable(
             onClick = onClick ?: {},
             onLongClick = onLongClick,
-            onClickLabel = "$date 상세보기",
+            onClickLabel = clickLabelText,
         )
         .semantics {
-            contentDescription = "$date: ${count}건"
+            contentDescription = contentDescriptionText
             if (onClick != null) {
                 role = Role.Button
             }
@@ -338,14 +339,14 @@ var currentStreak = 0
 
 ---
 
-## 9. Effective Kotlin 원칙
+## 9. Kotlin 모범 사례 (Best Practices)
 
-> 《이펙티브 코틀린》(마르친 모스칼라 저)의 핵심 원칙 중 본 프로젝트에 적용 가능한 항목을 정리한다.
+> 본 프로젝트에 적용 가능한 Kotlin 핵심 원칙을 정리한다.
 > 기존 섹션(1~8)에서 이미 다루는 내용(가시성 최소화, @Immutable, remember, KDoc 등)은 제외한다.
 
 ### 9.1 안정성 (Safety)
 
-#### 가변성 제한 (Item 1)
+#### 가변성 제한
 
 - `var`보다 `val`을 우선 사용한다.
 - 불변 컬렉션(`List`, `Map`)을 기본으로 사용하고, `MutableList`는 함수 내부 빌드 용도로만 사용한 뒤 불변으로 반환한다.
@@ -366,7 +367,7 @@ val updated = streakInfo.copy(currentStreak = 5)
 fun getWeeks(): MutableList<MutableList<LocalDate?>> = weeks  // 위험
 ```
 
-#### 변수 스코프 최소화 (Item 2)
+#### 변수 스코프 최소화
 
 - 변수는 사용하는 곳에 가장 가까이 선언한다.
 - 구조분해 선언을 활용하여 스코프를 좁힌다.
@@ -392,7 +393,7 @@ for (week in grid) {
 }
 ```
 
-#### require/check로 기대 조건 명시 (Item 5)
+#### require/check로 기대 조건 명시
 
 - `require()`: 함수 아규먼트 검증 → `IllegalArgumentException`
 - `check()`: 객체 상태 검증 → `IllegalStateException`
@@ -411,7 +412,7 @@ internal fun validateLevels(levels: List<Color>) {
 check(googledPlatformType != null) { "Platform type should be resolved" }
 ```
 
-#### null 안전 처리 (Item 7, 8)
+#### null 안전 처리
 
 - 안전 호출(`?.`), 엘비스 연산자(`?:`), `firstOrNull` 등을 활용한다.
 - `!!` 연산자는 null이 아님이 확실히 보장된 경우에만 사용한다.
@@ -431,7 +432,7 @@ val count = contributions[day]!!  // NPE 위험
 
 ### 9.2 가독성 (Readability)
 
-#### 가독성 중심 설계 (Item 11)
+#### 가독성 중심 설계
 
 - 코드 작성 시간보다 읽는 시간이 길다. **인식 부하를 최소화**하는 방향으로 설계한다.
 - 관용적(idiomatic) 코틀린 코드를 선호하되, 과도한 축약은 피한다.
@@ -447,7 +448,7 @@ return level.takeIf { it > 0 }
     ?: colors.empty
 ```
 
-#### 프로퍼티는 상태를 나타냄 (Item 16)
+#### 프로퍼티는 상태를 나타냄
 
 - 프로퍼티는 **상태(state)를 표현**하는 데 사용한다.
 - 복잡한 계산이나 부수 효과가 있는 동작은 **함수**로 작성한다.
@@ -466,7 +467,7 @@ val grid: List<List<LocalDate?>>
     get() = buildGrid(days, weekStartDay)  // 호출마다 전체 그리드 재생성
 ```
 
-#### 이름 있는 아규먼트 활용 (Item 17)
+#### 이름 있는 아규먼트 활용
 
 - 동일 타입 파라미터가 연속되거나, 의미가 불명확한 경우 이름 있는 아규먼트를 사용한다.
 - 특히 `Boolean` 파라미터는 반드시 이름을 명시한다.
@@ -485,7 +486,7 @@ GitGrass(
 GitGrass(data, Modifier, startDate, endDate, DayOfWeek.MONDAY, colors, ...)
 ```
 
-#### 표준 라이브러리 함수 우선 (Item 20)
+#### 표준 라이브러리 함수 우선
 
 - 직접 구현하기 전에 **kotlin stdlib, collections API**에 동일 기능이 있는지 확인한다.
 - `coerceIn`, `coerceAtLeast`, `firstNotNullOfOrNull`, `getOrElse`, `associate`, `withIndex` 등을 적극 활용한다.
@@ -503,7 +504,7 @@ fun clampToZero(value: Int): Int = if (value < 0) 0 else value  // coerceAtLeast
 
 ### 9.3 설계 (Design)
 
-#### 추상화 수준 통일 (Item 26)
+#### 추상화 수준 통일
 
 - 하나의 함수는 **하나의 추상화 수준**으로 작성한다.
 - 높은 수준(의도)과 낮은 수준(구현 세부)을 섞지 않는다.
@@ -533,7 +534,7 @@ fun GitGrass(...) {
 }
 ```
 
-#### 컴포지션 우선 (Item 36)
+#### 컴포지션 우선
 
 - 상속보다 **컴포지션(composition)** 을 선호한다.
 - 상속은 `is-a` 관계에만 사용하고, `has-a` 관계는 컴포지션으로 표현한다.
@@ -552,7 +553,7 @@ open class BaseGrassComponent { ... }
 class GrassGrid : BaseGrassComponent() { ... }  // 불필요한 상속 계층
 ```
 
-#### 팩토리 함수 활용 (Item 33)
+#### 팩토리 함수 활용
 
 - 생성자보다 **팩토리 함수**가 유리한 경우 활용한다.
 - 팩토리 함수는 이름으로 의도를 전달할 수 있고, 캐싱이나 서브타입 반환이 가능하다.
@@ -569,7 +570,7 @@ fun startDate(weekStartDay: DayOfWeek): LocalDate = LocalDate.now()
     .with(TemporalAdjusters.previousOrSame(weekStartDay))
 ```
 
-#### sealed 클래스로 제한된 계층 표현 (Item 39)
+#### sealed 클래스로 제한된 계층 표현
 
 - 태그 클래스(enum 필드로 타입 구분) 대신 **sealed 클래스/인터페이스**를 사용한다.
 - 컴파일러가 `when` 분기의 완전성을 검증하여 안전성을 보장한다.
@@ -598,7 +599,7 @@ data class LoadResult(
 
 ### 9.4 효율성 (Efficiency)
 
-#### 불필요한 객체 생성 회피 (Item 45)
+#### 불필요한 객체 생성 회피
 
 - 동일한 값의 객체를 반복 생성하지 않는다.
 - `remember`를 활용하여 리컴포지션 시 불필요한 재생성을 방지한다 (섹션 6 참조).
@@ -617,7 +618,7 @@ val labelMap = remember(monthPositions) {
 val shape = RoundedCornerShape(cornerRadius)  // remember 없이 매번 생성
 ```
 
-#### 컬렉션 처리 단계 최소화 (Item 50)
+#### 컬렉션 처리 단계 최소화
 
 - 체이닝 단계를 줄여 중간 컬렉션 생성을 최소화한다.
 - `mapNotNull`, `filterIsInstance` 등 결합 연산자를 활용한다.
@@ -633,7 +634,7 @@ contributions.filter { it.value < 0 }.mapValues { (_, v) -> 0 } +
     contributions.filter { it.value >= 0 }  // 2번 순회 + 합성
 ```
 
-#### 대량 데이터에는 Sequence 고려 (Item 49)
+#### 대량 데이터에는 Sequence 고려
 
 - 컬렉션에 **여러 변환 단계**를 적용할 때 `Sequence`를 고려한다.
 - Sequence는 지연 처리(lazy evaluation)로 중간 컬렉션을 만들지 않는다.

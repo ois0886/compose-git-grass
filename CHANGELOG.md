@@ -7,6 +7,32 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-13
+
+### Added
+- `cellContentDescription` 파라미터: GrassCell 접근성 텍스트 커스터마이징 (하드코딩 한국어 제거)
+- `cellClickLabel` 파라미터: GrassCell 클릭 라벨 커스터마이징
+- 내부 타입 별칭 (`ContributionData`, `Grid`, `MonthPositions`) 추가
+- 레이아웃 상수 `GitGrassDefaults`에 추출 (`weekLabelWidth`, `DAYS_PER_WEEK`, spacing 값)
+- Compose UI 테스트 추가 (`GrassCellTest`, `LabelRenderingTest`)
+- `createMonthLabels()`, `calculateStreak()` 추가 유닛 테스트
+- CI에 Android Lint 정적 분석 단계 추가
+- JaCoCo 커버리지 최소 80% 임계값 설정 (`jacocoCoverageVerification`)
+
+### Changed
+- `calculateStreak()` 이중 반복을 단일 패스로 최적화
+- 매직 넘버 (`7`, `28.dp`, `4.dp`, `2.dp`, `8.dp`, `16.dp`)를 명명된 상수로 추출
+- CODE_QUALITY.md 섹션 9 제목 및 서적 인용 제거 (내용 유지)
+- 샘플 앱 `MainActivity`를 기능별 파일로 분리 (`demos/`, `components/`, `data/`)
+
+### Deprecated
+- `GitGrassColors.border` — 렌더링에 사용되지 않음, 2.0.0에서 제거 예정
+
+### Infrastructure
+- `library/build.gradle.kts`에 Compose UI 테스트 의존성 추가
+- `library/src/androidTest/` 인스트루먼트 테스트 디렉토리 구성
+- CI에 커버리지 임계값 검증 및 Lint 리포트 업로드 스텝 추가
+
 ## [1.0.0] - 2026-03-12
 
 ### Added
@@ -67,7 +93,8 @@
 - 월 라벨 위치 결정 (`createMonthLabels`)
 - 연도 라벨 포맷팅 (`formatYearLabel`)
 
-[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ois0886/compose-git-grass/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ois0886/compose-git-grass/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/ois0886/compose-git-grass/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ois0886/compose-git-grass/releases/tag/v0.1.0
