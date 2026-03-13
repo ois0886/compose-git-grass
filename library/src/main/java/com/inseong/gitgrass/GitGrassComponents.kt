@@ -310,15 +310,17 @@ internal fun ColorLegend(
             modifier = Modifier
                 .size(cellSize)
                 .clip(shape)
-                .background(colors.empty, shape),
+                .background(colors.empty, shape)
+                .semantics { contentDescription = "Level 0" },
         )
 
-        for (levelColor in colors.levels) {
+        for ((index, levelColor) in colors.levels.withIndex()) {
             Box(
                 modifier = Modifier
                     .size(cellSize)
                     .clip(shape)
-                    .background(levelColor, shape),
+                    .background(levelColor, shape)
+                    .semantics { contentDescription = "Level ${index + 1}" },
             )
         }
 
