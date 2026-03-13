@@ -121,6 +121,11 @@ git push origin v1.0.0
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
   - `GridBenchmarkTest.kt` — 성능 벤치마크 (4개)
 
+## Code Quality
+
+코드 퀄리티 가이드라인은 [CODE_QUALITY.md](./CODE_QUALITY.md)를 따른다.
+모든 코드 작성 및 리뷰 시 해당 문서의 규칙을 준수한다.
+
 ## Workflow Rules
 
 ### 1. Plan Mode First (필수)
