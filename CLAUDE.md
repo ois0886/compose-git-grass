@@ -27,6 +27,12 @@ GitHub contribution graph (grass) UI component library for Jetpack Compose.
 ./gradlew :library:jacocoTestReport
 # → library/build/reports/jacoco/jacocoTestReport/html/
 
+# Verify coverage threshold (80% minimum)
+./gradlew :library:jacocoCoverageVerification
+
+# Run Android Lint
+./gradlew :library:lint
+
 # Generate API documentation (Dokka)
 ./gradlew :library:dokkaGenerate
 # → library/build/dokka/html/
@@ -74,8 +80,8 @@ signing.secretKeyRingFile=<path to secring.gpg>
 # 1. library/build.gradle.kts에서 버전 업데이트
 # 2. CHANGELOG.md 업데이트
 # 3. 커밋 후 태그 생성 및 push
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 ## Code Conventions
@@ -89,8 +95,8 @@ git push origin v1.0.0
 
 ### CI (`.github/workflows/ci.yml`)
 - **트리거**: `main` branch push / PR
-- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 라이브러리 빌드 → 샘플앱 빌드
-- 커버리지 리포트는 GitHub Actions artifact로 업로드
+- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 커버리지 임계값 검증 (80%) → Android Lint → 라이브러리 빌드 → 샘플앱 빌드
+- 커버리지 리포트 및 Lint 리포트는 GitHub Actions artifact로 업로드
 
 ### Release (`.github/workflows/release.yml`)
 - **트리거**: `v*` 태그 push
@@ -98,7 +104,8 @@ git push origin v1.0.0
 
 ## 품질 도구
 
-- **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`)
+- **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`) + 임계값 검증 80% (`./gradlew :library:jacocoCoverageVerification`)
+- **Android Lint**: 정적 분석 (`./gradlew :library:lint`)
 - **Dokka 2.0**: API 문서 생성 (`./gradlew :library:dokkaGenerate`)
 - **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙 정의
 - **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
@@ -110,16 +117,20 @@ git push origin v1.0.0
   - `GitGrass.kt` — 메인 컴포저블 (public API)
   - `GitGrassColors.kt` — 색상 스킴 데이터 클래스
   - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, GrassWeekColumn, GrassCell, StreakSummary, ColorLegend)
-  - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일)
+  - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일, 레이아웃 상수)
   - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
+  - `TypeAliases.kt` — 내부 타입 별칭 (ContributionData, Grid, MonthPositions)
 
 ## 테스트 구조
 
 - `library/src/test/` — JUnit 4 유닛 테스트
-  - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산, 입력 정규화, 주 시작일
+  - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산, 입력 정규화, 주 시작일, 월 경계
   - `GitGrassDefaultsTest.kt` — startDate, endDate, levelThresholds, 로케일 라벨, 색상
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
   - `GridBenchmarkTest.kt` — 성능 벤치마크 (4개)
+- `library/src/androidTest/` — Compose UI 인스트루먼트 테스트
+  - `GrassCellTest.kt` — 셀 클릭/롱클릭 콜백 검증
+  - `LabelRenderingTest.kt` — 월 라벨, 주 라벨 렌더링 검증
 
 ## Code Quality
 

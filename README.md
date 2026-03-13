@@ -28,11 +28,11 @@ GitHub의 잔디 그래프는 활동량을 한눈에 보여주는 훌륭한 시�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-git-grass:1.0.0")
+    implementation("io.github.ois0886:compose-git-grass:1.1.0")
 }
 ```
 
-> **0.1.x에서 마이그레이션**: 기본 API는 동일합니다. 새 파라미터(`weekStartDay`, `showLegend`, `onCellLongClick` 등)가 추가되었으며 모두 기본값이 있어 기존 코드가 그대로 동작합니다.
+> **1.0.0에서 마이그레이션**: 새 파라미터(`cellContentDescription`, `cellClickLabel`)가 추가되었으며 모두 기본값이 있어 기존 코드가 그대로 동작합니다. `GitGrassColors.border`는 deprecated 되었습니다 (2.0.0에서 제거 예정).
 
 ## Quick Start
 
@@ -77,7 +77,6 @@ GitGrass(
             Color(0xFF1565C0),
         ),
         text = Color.Black,
-        border = Color.Gray,
     ),
     levelOf = { count ->
         when {
@@ -193,6 +192,8 @@ GitGrass(
 | `streakCurrentLabel` | `String` | "Current streak" | 현재 스트릭 라벨 |
 | `lessLabel` | `String` | "Less" | 범례 "적음" 라벨 |
 | `moreLabel` | `String` | "More" | 범례 "많음" 라벨 |
+| `cellContentDescription` | `(LocalDate, Int) -> String` | `"$date: $count"` | 셀 접근성 텍스트 (1.1.0) |
+| `cellClickLabel` | `(LocalDate) -> String` | `"$date details"` | 셀 클릭 접근성 라벨 (1.1.0) |
 | `levelOf` | `(Int) -> Int` | 0/1-3/4-6/7-9/10+ | 기여 횟수 → 레벨 매핑 |
 | `onCellClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 탭 콜백 |
 | `onCellLongClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 롱프레스 콜백 |
@@ -204,7 +205,7 @@ GitGrass(
 | `empty` | 기여 없는 날의 색상 |
 | `levels` | 기여 레벨별 색상 리스트 (개수 자유) |
 | `text` | 라벨 텍스트 색상 |
-| `border` | 셀 테두리 색상 |
+| `border` | ~~셀 테두리 색상~~ (deprecated, 2.0.0에서 제거 예정) |
 
 ### Forgiving Input
 
@@ -215,11 +216,22 @@ GitGrass(
 - **누락된 날짜** - 기여 0회로 처리
 - **짧은 라벨 리스트** - 부족한 항목은 빈 문자열로 대체
 
-## Accessibility (1.0.0 신규)
+## Accessibility
 
 - 모든 셀에 `contentDescription` 제공 (스크린 리더 지원)
 - 클릭 가능한 셀에 `Role.Button` 및 `onClickLabel` 설정
 - 그래프 루트에 "Contribution graph" semantics 적용
+- 범례 셀에 "Level 0", "Level 1" 등 접근성 라벨 제공
+- `cellContentDescription`, `cellClickLabel` 파라미터로 접근성 텍스트 커스터마이징 가능 (1.1.0)
+
+```kotlin
+// 한국어 접근성 텍스트 예시
+GitGrass(
+    contributions = data,
+    cellContentDescription = { date, count -> "$date: ${count}건" },
+    cellClickLabel = { date -> "$date 상세보기" },
+)
+```
 
 ## Development Highlights
 
@@ -227,7 +239,7 @@ GitGrass(
 - **유연한 색상 레벨** - 고정된 `level1`~`level4` 대신 `levels: List<Color>`를 사용합니다. 3단계든, 5단계든, 10단계든 자유롭게 지정할 수 있습니다.
 - **픽셀 단위 월 라벨 정렬** - 월 라벨이 그리드와 동일한 `Arrangement.spacedBy` + 고정 너비 슬롯 구조를 사용하여, 어떤 셀 크기에서도 정확하게 정렬됩니다.
 - **공유 ScrollState** - 월 라벨 행과 그리드가 하나의 `ScrollState`를 공유하여 가로 스크롤 시 항상 동기화됩니다.
-- **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 60+ 유닛 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스를 검증합니다.
+- **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 60+ 유닛 테스트와 Compose UI 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스, UI 인터랙션을 검증합니다.
 - **접근성** - 모든 셀에 contentDescription, semantics 적용으로 스크린 리더를 지원합니다.
 - **오늘 날짜로 자동 스크롤** - `LaunchedEffect`로 첫 컴포지션 시 가장 최근 날짜(오른쪽 끝)로 자동 스크롤됩니다.
 
