@@ -4,7 +4,7 @@ GitHub contribution graph (grass) UI component library for Jetpack Compose.
 
 ## Project Structure
 
-- **`:library`** - Published library module (`com.inseong:compose-git-grass`)
+- **`:library`** - Published library module (`io.github.ois0886:compose-git-grass`)
   - Package: `com.inseong.gitgrass`
   - Contains the `GitGrass` composable and related APIs
 - **`:app`** - Sample/demo application
@@ -95,7 +95,7 @@ git push origin v1.1.0
 
 ### CI (`.github/workflows/ci.yml`)
 - **트리거**: `main` branch push / PR
-- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 커버리지 임계값 검증 (80%) → Android Lint → 라이브러리 빌드 → 샘플앱 빌드
+- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 커버리지 임계값 검증 (80%) → Android Lint → Compose UI 인스트루먼트 테스트(`connectedDebugAndroidTest`) → 라이브러리 빌드 → 샘플앱 빌드
 - 커버리지 리포트 및 Lint 리포트는 GitHub Actions artifact로 업로드
 
 ### Release (`.github/workflows/release.yml`)
@@ -190,6 +190,13 @@ docs: AGENTS.md 워크플로우 규칙 추가
 
 문서 간 중복 내용이 발생할 경우, 상세 설명은 `docs/`에 모으고 AGENTS/CLAUDE에는 요약과 링크만 유지한다.
 
+### Single Source Policy
+
+- 에이전트 작업 규칙의 단일 출처는 `AGENTS.md`로 한다.
+- `CLAUDE.md`는 요약/진입 문서로 유지하고, 상세 규칙은 `AGENTS.md`를 참조한다.
+- 작업 규칙 수정 시 `AGENTS.md`를 먼저 변경하고, 필요 시 `CLAUDE.md`에는 요약만 동기화한다.
+
 ## Documentation Record
 
 - 2026-04-10: 프로젝트 전체 문서(README.md, CLAUDE.md, CODE_QUALITY.md, CHANGELOG.md, `.claude/settings.local.json`)를 재검토하고 문서 분류 기준을 `docs/DOCS_CLASSIFICATION.md`로 분리 기록함.
+- 2026-04-10: 문서 좌표 표기를 `io.github.ois0886:compose-git-grass`로 통일하고, AGENTS/CLAUDE 중복 관리를 위해 단일 출처 정책을 추가함.

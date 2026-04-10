@@ -47,6 +47,14 @@ jobs:
           name: lint-report
           path: library/build/reports/lint-results-debug.html
 
+      - name: Run Compose UI instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          script: ./gradlew :library:connectedDebugAndroidTest
+
       - name: Build library
         run: ./gradlew :library:assembleDebug
 
