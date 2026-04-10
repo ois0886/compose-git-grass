@@ -7,6 +7,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Compose UI 인스트루먼트 테스트에서 `performLongClick` 참조 오류로 발생하던 CI(`ui-test`) 컴파일 실패를 `performTouchInput { longClick() }` 방식으로 수정
+
 ## [1.1.0] - 2026-03-13
 
 ### Added
