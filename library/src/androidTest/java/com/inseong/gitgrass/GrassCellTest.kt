@@ -1,9 +1,10 @@
 package com.inseong.gitgrass
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performLongClick
+import androidx.compose.ui.test.performTouchInput
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -61,7 +62,9 @@ class GrassCellTest {
         }
 
         composeTestRule.onNodeWithContentDescription("$date: $count")
-            .performLongClick()
+            .performTouchInput {
+                longClick()
+            }
 
         assertTrue(longClicked)
     }
