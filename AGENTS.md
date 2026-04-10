@@ -30,6 +30,9 @@ GitHub contribution graph (grass) UI component library for Jetpack Compose.
 # Verify coverage threshold (80% minimum)
 ./gradlew :library:jacocoCoverageVerification
 
+# Verify README/CHANGELOG version sync with library version
+./scripts/verify-doc-sync.sh
+
 # Run Android Lint
 ./gradlew :library:lint
 
@@ -95,7 +98,12 @@ git push origin v1.1.0
 
 ### CI (`.github/workflows/ci.yml`)
 - **트리거**: `main` branch push / PR
-- **스텝**: 테스트 → JaCoCo 커버리지 리포트 → 커버리지 임계값 검증 (80%) → Android Lint → Compose UI 인스트루먼트 테스트(`connectedDebugAndroidTest`) → 라이브러리 빌드 → 샘플앱 빌드
+- **병렬 잡 구조**:
+  - `docs-sync`: README/CHANGELOG 버전 동기화 검증 (`scripts/verify-doc-sync.sh`)
+  - `quality`: 테스트 → 커버리지 리포트/임계값 검증 → Android Lint
+  - `assemble`: 라이브러리/샘플앱 빌드
+  - `ui-test`: Compose UI 인스트루먼트 테스트(`connectedDebugAndroidTest`)
+  - `build`: 위 잡 완료 여부를 집계하는 게이트 잡
 - 커버리지 리포트 및 Lint 리포트는 GitHub Actions artifact로 업로드
 
 ### Release (`.github/workflows/release.yml`)
@@ -200,3 +208,4 @@ docs: AGENTS.md 워크플로우 규칙 추가
 
 - 2026-04-10: 프로젝트 전체 문서(README.md, CLAUDE.md, CODE_QUALITY.md, CHANGELOG.md, `.claude/settings.local.json`)를 재검토하고 문서 분류 기준을 `docs/DOCS_CLASSIFICATION.md`로 분리 기록함.
 - 2026-04-10: 문서 좌표 표기를 `io.github.ois0886:compose-git-grass`로 통일하고, AGENTS/CLAUDE 중복 관리를 위해 단일 출처 정책을 추가함.
+- 2026-04-10: `scripts/verify-doc-sync.sh`를 추가해 README/CHANGELOG 버전 동기화를 자동 검증하고, CI를 `quality/assemble/ui-test` 병렬 구조로 최적화함.

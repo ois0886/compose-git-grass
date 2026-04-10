@@ -65,3 +65,4 @@
   - `AGENTS.md`에 문서 분류 링크 및 점검 기록 추가
   - 문서 분류 기준을 `docs/`로 분리하여 유지보수성 개선
   - `CLAUDE.md`를 요약 가이드로 축소하고 상세 규칙은 `AGENTS.md` 단일 출처로 정리
+  - `scripts/verify-doc-sync.sh`로 README/CHANGELOG 동기화 자동 검증 추가, CI 병렬 잡 구조로 실행 시간 최적화

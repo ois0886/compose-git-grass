@@ -34,6 +34,9 @@ jobs:
           fi
           echo "버전 확인 완료: $TAG_VERSION"
 
+      - name: Verify documentation/version sync
+        run: ./scripts/verify-doc-sync.sh
+
       - name: Run library tests
         run: ./gradlew :library:test
 

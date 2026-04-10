@@ -28,6 +28,9 @@
 ./gradlew :library:jacocoTestReport
 ./gradlew :library:jacocoCoverageVerification
 
+# Docs/version sync check
+./scripts/verify-doc-sync.sh
+
 # Lint
 ./gradlew :library:lint
 
