@@ -103,6 +103,7 @@ git push origin v1.1.0
   - `quality`: 테스트 → 커버리지 리포트/임계값 검증 → Android Lint
   - `assemble`: 라이브러리/샘플앱 빌드
   - `ui-test`: Compose UI 인스트루먼트 테스트(`connectedDebugAndroidTest`)
+    - 참고: 에뮬레이터 부팅/실행 안정성을 위해 `timeout-minutes: 30`, `-no-metrics` 옵션 사용
   - `build`: 위 잡 완료 여부를 집계하는 게이트 잡
 - 커버리지 리포트 및 Lint 리포트는 GitHub Actions artifact로 업로드
 
@@ -210,3 +211,4 @@ docs: AGENTS.md 워크플로우 규칙 추가
 - 2026-04-10: 문서 좌표 표기를 `io.github.ois0886:compose-git-grass`로 통일하고, AGENTS/CLAUDE 중복 관리를 위해 단일 출처 정책을 추가함.
 - 2026-04-10: `scripts/verify-doc-sync.sh`를 추가해 README/CHANGELOG 버전 동기화를 자동 검증하고, CI를 `quality/assemble/ui-test` 병렬 구조로 최적화함.
 - 2026-04-10: CI `ui-test` 실패 원인(`GrassCellTest`의 `performLongClick` 참조 오류) 수정 후, GitHub Actions 런 #24225465922 전체 잡 통과를 확인함.
+- 2026-04-10: CI `ui-test` 안정성 강화를 위해 잡 타임아웃(30분)과 에뮬레이터 `-no-metrics` 옵션을 추가함.

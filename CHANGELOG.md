@@ -10,6 +10,9 @@
 ### Fixed
 - Compose UI 인스트루먼트 테스트에서 `performLongClick` 참조 오류로 발생하던 CI(`ui-test`) 컴파일 실패를 `performTouchInput { longClick() }` 방식으로 수정
 
+### Changed
+- CI `ui-test` 잡에 타임아웃(30분)과 에뮬레이터 `-no-metrics` 옵션을 추가해 실행 안정성 개선
+
 ## [1.1.0] - 2026-03-13
 
 ### Added
