@@ -12,6 +12,7 @@
 ## Quick Facts
 
 - 배포 좌표: `io.github.ois0886:compose-git-grass:<version>`
+- 현재 릴리즈: `1.1.1`
 - 라이브러리 모듈: `:library` (`com.inseong.gitgrass`)
 - 샘플 앱 모듈: `:app`
 

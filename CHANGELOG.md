@@ -7,6 +7,9 @@
 
 ## [Unreleased]
 
+### Changed
+- `1.1.1` 릴리즈 기준으로 README/AGENTS/CLAUDE 문서의 현재 버전 표기와 릴리즈 절차 안내를 정리
+
 ## [1.1.1] - 2026-06-11
 
 ### Fixed

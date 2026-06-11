@@ -53,6 +53,8 @@ Uses [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/grad
 
 Maven coordinates: `io.github.ois0886:compose-git-grass:<version>`
 
+Current release: `1.1.1`
+
 ### 로컬 배포 (수동)
 
 Required credentials in `~/.gradle/gradle.properties`:
@@ -80,11 +82,12 @@ signing.secretKeyRingFile=<path to secring.gpg>
 
 **릴리즈 절차:**
 ```bash
-# 1. library/build.gradle.kts에서 버전 업데이트
-# 2. CHANGELOG.md 업데이트
-# 3. 커밋 후 태그 생성 및 push
-git tag v1.1.0
-git push origin v1.1.0
+# 1. library/build.gradle.kts에서 <version>으로 버전 업데이트
+# 2. README.md 설치 예시와 CHANGELOG.md 릴리즈 섹션/비교 링크 업데이트
+# 3. 릴리즈 준비 PR 생성(Ready for review) 및 merge
+# 4. main 최신 커밋에 태그 생성 및 push
+git tag v<version>
+git push origin v<version>
 ```
 
 ## Code Conventions
@@ -222,3 +225,4 @@ docs: AGENTS.md 워크플로우 규칙 추가
 - 2026-04-10: `scripts/verify-doc-sync.sh`를 추가해 README/CHANGELOG 버전 동기화를 자동 검증하고, CI를 `quality/assemble/ui-test` 병렬 구조로 최적화함.
 - 2026-04-10: CI `ui-test` 실패 원인(`GrassCellTest`의 `performLongClick` 참조 오류) 수정 후, GitHub Actions 런 #24225465922 전체 잡 통과를 확인함.
 - 2026-04-10: CI `ui-test` 안정성 강화를 위해 잡 타임아웃(30분)과 에뮬레이터 `-no-metrics` 옵션을 추가함.
+- 2026-06-11: `v1.1.1` 릴리즈 기준으로 README/CHANGELOG/AGENTS/CLAUDE 문서의 버전 및 릴리즈 절차 표기를 재점검함.

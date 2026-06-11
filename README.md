@@ -25,6 +25,8 @@ GitHub의 잔디 그래프는 활동량을 한눈에 보여주는 훌륭한 시�
 
 ## Setup
 
+현재 최신 릴리즈는 `1.1.1`입니다.
+
 ```kotlin
 // build.gradle.kts
 dependencies {
