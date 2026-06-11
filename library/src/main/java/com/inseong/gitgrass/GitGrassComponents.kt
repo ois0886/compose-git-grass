@@ -137,16 +137,11 @@ internal fun WeekLabelColumn(
 /** Scrollable grid of contribution cells organized by week columns. */
 @Composable
 internal fun GrassGridContent(
-    grid: Grid,
-    contributions: ContributionData,
-    colors: GitGrassColors,
+    renderGrid: RenderGrid,
     cellSize: Dp,
     cellSpacing: Dp,
     cellShape: Shape,
-    levelOf: (Int) -> Int,
     scrollState: ScrollState,
-    cellContentDescription: (LocalDate, Int) -> String,
-    cellClickLabel: (LocalDate) -> String,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
@@ -154,17 +149,12 @@ internal fun GrassGridContent(
         modifier = Modifier.horizontalScroll(scrollState),
         horizontalArrangement = Arrangement.spacedBy(cellSpacing),
     ) {
-        for (week in grid) {
+        for (week in renderGrid) {
             GrassWeekColumn(
                 week = week,
-                contributions = contributions,
-                colors = colors,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
                 cellShape = cellShape,
-                levelOf = levelOf,
-                cellContentDescription = cellContentDescription,
-                cellClickLabel = cellClickLabel,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )
@@ -175,37 +165,24 @@ internal fun GrassGridContent(
 /** A single week column of [DAYS_PER_WEEK] day cells. */
 @Composable
 internal fun GrassWeekColumn(
-    week: List<LocalDate?>,
-    contributions: ContributionData,
-    colors: GitGrassColors,
+    week: List<GrassCellRenderData?>,
     cellSize: Dp,
     cellSpacing: Dp,
     cellShape: Shape,
-    levelOf: (Int) -> Int,
-    cellContentDescription: (LocalDate, Int) -> String,
-    cellClickLabel: (LocalDate) -> String,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(cellSpacing)) {
-        for (day in week) {
-            if (day != null) {
-                val count = contributions[day] ?: 0
-                val level = levelOf(count)
-                val color = levelToColor(level, colors)
-                val clickLabelText = if (onCellClick != null || onCellLongClick != null) {
-                    cellClickLabel(day)
-                } else {
-                    null
-                }
+        for (cell in week) {
+            if (cell != null) {
                 GrassCell(
-                    color = color,
+                    color = cell.color,
                     size = cellSize,
                     shape = cellShape,
-                    contentDescriptionText = cellContentDescription(day, count),
-                    clickLabelText = clickLabelText,
-                    onClick = onCellClick?.let { callback -> { callback(day, count) } },
-                    onLongClick = onCellLongClick?.let { callback -> { callback(day, count) } },
+                    contentDescriptionText = cell.contentDescription,
+                    clickLabelText = cell.clickLabel,
+                    onClick = onCellClick?.let { callback -> { callback(cell.date, cell.count) } },
+                    onLongClick = onCellLongClick?.let { callback -> { callback(cell.date, cell.count) } },
                 )
             } else {
                 Spacer(modifier = Modifier.size(cellSize))

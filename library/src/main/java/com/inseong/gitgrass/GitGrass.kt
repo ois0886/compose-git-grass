@@ -123,6 +123,27 @@ fun GitGrass(
         if (showStreak) calculateStreak(safeContributions, days, safeEnd) else null
     }
     val cellShape = remember(cellCornerRadius) { RoundedCornerShape(cellCornerRadius) }
+    val hasCellActions = onCellClick != null || onCellLongClick != null
+    val cellClickLabelKey = if (hasCellActions) cellClickLabel else null
+    val renderGrid = remember(
+        grid,
+        safeContributions,
+        colors,
+        levelOf,
+        cellContentDescription,
+        cellClickLabelKey,
+        hasCellActions,
+    ) {
+        buildRenderGrid(
+            grid = grid,
+            contributions = safeContributions,
+            colors = colors,
+            levelOf = levelOf,
+            cellContentDescription = cellContentDescription,
+            cellClickLabel = cellClickLabel,
+            includeClickLabels = hasCellActions,
+        )
+    }
 
     val scrollState: ScrollState = rememberScrollState()
 
@@ -174,16 +195,11 @@ fun GitGrass(
             }
 
             GrassGridContent(
-                grid = grid,
-                contributions = safeContributions,
-                colors = colors,
+                renderGrid = renderGrid,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
                 cellShape = cellShape,
-                levelOf = levelOf,
                 scrollState = scrollState,
-                cellContentDescription = cellContentDescription,
-                cellClickLabel = cellClickLabel,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )

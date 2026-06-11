@@ -74,10 +74,49 @@ class GridBenchmarkTest {
     }
 
     @Test
+    fun `buildRenderGrid 1000일 100ms 이내 완료`() {
+        val (start, contributions) = generateContributions(1000)
+        val end = LocalDate.of(2025, 12, 31)
+        val days = generateDayList(start, end)
+        val grid = buildGrid(days)
+        val colors = GitGrassDefaults.colors()
+
+        repeat(5) {
+            buildRenderGrid(
+                grid = grid,
+                contributions = contributions,
+                colors = colors,
+                levelOf = GitGrassDefaults.levelThresholds,
+                cellContentDescription = { day, count -> "$day: $count" },
+                cellClickLabel = { day -> "$day details" },
+                includeClickLabels = false,
+            )
+        }
+
+        val elapsed = measureNanoTime {
+            repeat(100) {
+                buildRenderGrid(
+                    grid = grid,
+                    contributions = contributions,
+                    colors = colors,
+                    levelOf = GitGrassDefaults.levelThresholds,
+                    cellContentDescription = { day, count -> "$day: $count" },
+                    cellClickLabel = { day -> "$day details" },
+                    includeClickLabels = false,
+                )
+            }
+        }
+        val avgMs = elapsed / 1_000_000.0 / 100
+        println("buildRenderGrid(1000일) 평균: %.3f ms".format(avgMs))
+        assert(avgMs < 100) { "buildRenderGrid 성능 초과: $avgMs ms" }
+    }
+
+    @Test
     fun `전체 파이프라인 3650일(10년) 500ms 이내 완료`() {
         val end = LocalDate.of(2025, 12, 31)
         val start = end.minusDays(3649)
         val contributions = mutableMapOf<LocalDate, Int>()
+        val colors = GitGrassDefaults.colors()
         var d = start
         var i = 0
         while (!d.isAfter(end)) {
@@ -88,7 +127,16 @@ class GridBenchmarkTest {
 
         repeat(3) {
             val days = generateDayList(start, end)
-            buildGrid(days)
+            val grid = buildGrid(days)
+            buildRenderGrid(
+                grid = grid,
+                contributions = contributions,
+                colors = colors,
+                levelOf = GitGrassDefaults.levelThresholds,
+                cellContentDescription = { day, count -> "$day: $count" },
+                cellClickLabel = { day -> "$day details" },
+                includeClickLabels = false,
+            )
             calculateStreak(contributions, days, end)
         }
 
@@ -97,6 +145,15 @@ class GridBenchmarkTest {
                 val days = generateDayList(start, end)
                 val grid = buildGrid(days)
                 createMonthLabels(grid)
+                buildRenderGrid(
+                    grid = grid,
+                    contributions = contributions,
+                    colors = colors,
+                    levelOf = GitGrassDefaults.levelThresholds,
+                    cellContentDescription = { day, count -> "$day: $count" },
+                    cellClickLabel = { day -> "$day details" },
+                    includeClickLabels = false,
+                )
                 calculateStreak(contributions, days, end)
             }
         }

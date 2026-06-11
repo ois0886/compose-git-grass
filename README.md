@@ -66,6 +66,7 @@ GitGrass(
 - `contributions`, `startDate`, `endDate`, 로케일 라벨, 커스텀 색상 팔레트는 `remember`나 ViewModel 상태로 안정적으로 전달하세요.
 - 필요 없는 보조 UI는 `showMonthLabels`, `showStreak`, `showLegend`를 `false`로 꺼두면 해당 계산과 렌더링 비용을 줄일 수 있습니다.
 - 매 리컴포지션마다 `LocalDate.now()`, `localizedMonthLabels()`, `GitGrassColors(...)`를 새로 만들기보다 한 번 계산한 값을 재사용하세요.
+- 셀별 색상과 접근성 라벨은 입력이 바뀔 때만 내부 render data로 다시 계산되므로, 안정적인 입력을 전달할수록 리컴포지션 비용이 작아집니다.
 
 ```kotlin
 val endDate = remember { LocalDate.now() }
