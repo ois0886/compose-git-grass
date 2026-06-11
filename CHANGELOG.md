@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-06-11
+
 ### Fixed
 - Compose UI 인스트루먼트 테스트에서 `performLongClick` 참조 오류로 발생하던 CI(`ui-test`) 컴파일 실패를 `performTouchInput { longClick() }` 방식으로 수정
 
@@ -110,7 +112,8 @@
 - 월 라벨 위치 결정 (`createMonthLabels`)
 - 연도 라벨 포맷팅 (`formatYearLabel`)
 
-[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/ois0886/compose-git-grass/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ois0886/compose-git-grass/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ois0886/compose-git-grass/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/ois0886/compose-git-grass/compare/v0.1.0...v0.1.1

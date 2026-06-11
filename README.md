@@ -28,7 +28,7 @@ GitHub의 잔디 그래프는 활동량을 한눈에 보여주는 훌륭한 시�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-git-grass:1.1.0")
+    implementation("io.github.ois0886:compose-git-grass:1.1.1")
 }
 ```
 
