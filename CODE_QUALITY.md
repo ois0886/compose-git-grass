@@ -271,6 +271,16 @@ val streakInfo = remember(showStreak, safeContributions, days, safeEnd) {
 
 셀처럼 반복 횟수가 많은 UI에서 동일한 객체를 각 셀마다 생성하지 않는다. Shape, TextStyle, 라벨 맵 등은 가능한 상위 컴포저블에서 한 번 만들고 하위 컴포넌트로 전달한다.
 
+### 렌더링 데이터 사전 계산
+
+셀별 count, level, color, 접근성 라벨처럼 입력이 바뀔 때만 달라지는 값은 `remember`된 render data로 미리 계산한다. 하위 컴포넌트는 가능한 한 이미 계산된 값을 렌더링만 한다.
+
+```kotlin
+val renderGrid = remember(grid, safeContributions, colors, levelOf) {
+    buildRenderGrid(...)
+}
+```
+
 ### 컬렉션 복사 최소화
 
 정규화가 필요 없는 입력 컬렉션은 원본을 그대로 반환한다. 값 변경이 실제로 필요한 경우에만 새 컬렉션을 만든다.
@@ -279,7 +289,7 @@ val streakInfo = remember(showStreak, safeContributions, days, safeEnd) {
 
 | 연산 | 데이터 규모 | 제한 |
 |------|------------|------|
-| 단일 연산 (generateDayList, buildGrid, calculateStreak) | 1,000일 | 100회 평균 < 100ms |
+| 단일 연산 (generateDayList, buildGrid, buildRenderGrid, calculateStreak) | 1,000일 | 100회 평균 < 100ms |
 | 전체 파이프라인 | 3,650일 (10년) | 10회 평균 < 500ms |
 
 새로운 유틸리티 함수 추가 시 대량 데이터 벤치마크를 `GridBenchmarkTest.kt`에 추가한다.

@@ -128,7 +128,8 @@ git push origin v1.1.0
   - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, GrassWeekColumn, GrassCell, StreakSummary, ColorLegend)
   - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일, 레이아웃 상수)
   - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
-  - `TypeAliases.kt` — 내부 타입 별칭 (ContributionData, Grid, MonthPositions)
+  - `RenderData.kt` — 셀별 count/color/접근성 라벨을 미리 계산하는 렌더링 데이터 유틸리티
+  - `TypeAliases.kt` — 내부 타입 별칭 (ContributionData, Grid, RenderGrid, MonthPositions)
 
 ## 테스트 구조
 
@@ -136,7 +137,8 @@ git push origin v1.1.0
   - `GridUtilsTest.kt` — 그리드 생성, 날짜 처리, streak 계산, 입력 정규화, 주 시작일, 월 경계
   - `GitGrassDefaultsTest.kt` — startDate, endDate, levelThresholds, 로케일 라벨, 색상
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
-  - `GridBenchmarkTest.kt` — 성능 벤치마크 (4개)
+  - `RenderDataTest.kt` — 렌더링 데이터 사전 계산 검증
+  - `GridBenchmarkTest.kt` — 성능 벤치마크 (5개)
 - `library/src/androidTest/` — Compose UI 인스트루먼트 테스트
   - `GrassCellTest.kt` — 셀 클릭/롱클릭 콜백 검증
   - `LabelRenderingTest.kt` — 월 라벨, 주 라벨 렌더링 검증
