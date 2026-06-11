@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -114,11 +115,14 @@ fun GitGrass(
 
     val days = remember(safeStart, safeEnd) { generateDayList(safeStart, safeEnd) }
     val grid = remember(days, weekStartDay) { buildGrid(days, weekStartDay) }
-    val monthPositions = remember(grid) { createMonthLabels(grid) }
-    val yearLabel = remember(safeStart, safeEnd) { formatYearLabel(safeStart, safeEnd) }
-    val streakInfo = remember(safeContributions, days) {
-        calculateStreak(safeContributions, days, safeEnd)
+    val monthPositions = remember(showMonthLabels, grid) {
+        if (showMonthLabels) createMonthLabels(grid) else emptyList()
     }
+    val yearLabel = remember(safeStart, safeEnd) { formatYearLabel(safeStart, safeEnd) }
+    val streakInfo = remember(showStreak, safeContributions, days, safeEnd) {
+        if (showStreak) calculateStreak(safeContributions, days, safeEnd) else null
+    }
+    val cellShape = remember(cellCornerRadius) { RoundedCornerShape(cellCornerRadius) }
 
     val scrollState: ScrollState = rememberScrollState()
 
@@ -175,7 +179,7 @@ fun GitGrass(
                 colors = colors,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
-                cellCornerRadius = cellCornerRadius,
+                cellShape = cellShape,
                 levelOf = levelOf,
                 scrollState = scrollState,
                 cellContentDescription = cellContentDescription,
@@ -187,14 +191,16 @@ fun GitGrass(
 
         if (showStreak) {
             Spacer(modifier = Modifier.height(GitGrassDefaults.streakTopSpacing))
-            StreakSummary(
-                streakInfo = streakInfo,
-                maxLabel = streakMaxLabel,
-                currentLabel = streakCurrentLabel,
-                fontSize = labelFontSize,
-                spacing = GitGrassDefaults.streakItemSpacing,
-                textColor = colors.text,
-            )
+            streakInfo?.let { info ->
+                StreakSummary(
+                    streakInfo = info,
+                    maxLabel = streakMaxLabel,
+                    currentLabel = streakCurrentLabel,
+                    fontSize = labelFontSize,
+                    spacing = GitGrassDefaults.streakItemSpacing,
+                    textColor = colors.text,
+                )
+            }
         }
 
         if (showLegend) {
@@ -210,7 +216,7 @@ fun GitGrass(
                     colors = colors,
                     cellSize = cellSize,
                     cellSpacing = cellSpacing,
-                    cornerRadius = cellCornerRadius,
+                    shape = cellShape,
                     fontSize = labelFontSize,
                     lessLabel = lessLabel,
                     moreLabel = moreLabel,

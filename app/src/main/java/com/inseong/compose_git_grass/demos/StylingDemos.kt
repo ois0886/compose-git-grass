@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,11 @@ import java.time.LocalDate
 
 @Composable
 internal fun CustomCellSizingDemo(data: Map<LocalDate, Int>) {
+    val dateRange = remember {
+        val end = LocalDate.now()
+        end.minusMonths(3) to end
+    }
+
     SectionCard(
         title = "Custom Cell Sizing",
         description = "Large rounded cells vs tiny dense cells",
@@ -30,8 +36,8 @@ internal fun CustomCellSizingDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(3),
-            endDate = LocalDate.now(),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
             cellSize = 20.dp,
             cellSpacing = 4.dp,
             cellCornerRadius = 10.dp,
@@ -59,6 +65,11 @@ internal fun CustomCellSizingDemo(data: Map<LocalDate, Int>) {
 
 @Composable
 internal fun CustomLevelMappingDemo(data: Map<LocalDate, Int>) {
+    val dateRange = remember {
+        val end = LocalDate.now()
+        end.minusMonths(3) to end
+    }
+
     SectionCard(
         title = "Custom Level Mapping",
         description = "Binary: any contribution = max level",
@@ -66,8 +77,8 @@ internal fun CustomLevelMappingDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(3),
-            endDate = LocalDate.now(),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
             levelOf = { count -> if (count > 0) 4 else 0 },
         )
     }
@@ -76,6 +87,37 @@ internal fun CustomLevelMappingDemo(data: Map<LocalDate, Int>) {
 @Suppress("DEPRECATION")
 @Composable
 internal fun CustomColorsDemo(data: Map<LocalDate, Int>) {
+    val dateRange = remember {
+        val end = LocalDate.now()
+        end.minusMonths(6) to end
+    }
+    val blueOceanColors = remember {
+        GitGrassColors(
+            empty = Color(0xFFE8EAF6),
+            levels = listOf(
+                Color(0xFFBBDEFB),
+                Color(0xFF64B5F6),
+                Color(0xFF1E88E5),
+                Color(0xFF0D47A1),
+            ),
+            text = Color(0xFF1A237E),
+            border = Color(0xFFC5CAE9),
+        )
+    }
+    val warmSunsetColors = remember {
+        GitGrassColors(
+            empty = Color(0xFFFFF3E0),
+            levels = listOf(
+                Color(0xFFFFCC80),
+                Color(0xFFFF9800),
+                Color(0xFFF57C00),
+                Color(0xFFE65100),
+            ),
+            text = Color(0xFFBF360C),
+            border = Color(0xFFFFE0B2),
+        )
+    }
+
     SectionCard(
         title = "Custom Colors",
         description = "Blue ocean & warm sunset color palettes",
@@ -89,19 +131,9 @@ internal fun CustomColorsDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(6),
-            endDate = LocalDate.now(),
-            colors = GitGrassColors(
-                empty = Color(0xFFE8EAF6),
-                levels = listOf(
-                    Color(0xFFBBDEFB),
-                    Color(0xFF64B5F6),
-                    Color(0xFF1E88E5),
-                    Color(0xFF0D47A1),
-                ),
-                text = Color(0xFF1A237E),
-                border = Color(0xFFC5CAE9),
-            ),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
+            colors = blueOceanColors,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -115,19 +147,9 @@ internal fun CustomColorsDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(6),
-            endDate = LocalDate.now(),
-            colors = GitGrassColors(
-                empty = Color(0xFFFFF3E0),
-                levels = listOf(
-                    Color(0xFFFFCC80),
-                    Color(0xFFFF9800),
-                    Color(0xFFF57C00),
-                    Color(0xFFE65100),
-                ),
-                text = Color(0xFFBF360C),
-                border = Color(0xFFFFE0B2),
-            ),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
+            colors = warmSunsetColors,
         )
     }
 }
