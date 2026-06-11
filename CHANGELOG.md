@@ -22,6 +22,7 @@
 - ProGuard consumer rules의 Compose/Immutable keep 범위를 라이브러리 패키지로 축소
 - `-PcomposeCompilerReports=true` 사용 시 Compose compiler metrics/reports를 생성하도록 opt-in 설정 추가
 - Lazy/Canvas 렌더링 데이터 준비 경로의 10년 범위 성능 벤치마크 추가
+- PR을 Draft가 아닌 Ready for review 상태로 생성하도록 에이전트 작업 문서에 명시
 
 ## [1.1.0] - 2026-03-13
 

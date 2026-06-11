@@ -170,6 +170,13 @@ git push origin v1.1.0
 - 모든 작업이 완료되면 반드시 git commit 후 `git push`까지 수행한다.
 - 커밋 메시지는 한국어로, conventional commit 형식을 따른다 (예: `feat:`, `fix:`, `refactor:`, `docs:`).
 
+### 5. PR 생성 규칙
+- Branch Protection 때문에 `main`에 직접 push하지 않고 작업 브랜치를 push한 뒤 PR을 생성한다.
+- PR은 기본적으로 **Ready for review** 상태로 생성한다.
+- 사용자가 명시적으로 요청하지 않는 한 Draft PR로 생성하지 않는다.
+- `gh pr create` 사용 시 `--draft` 옵션을 넣지 않는다. 실수로 Draft PR을 만들었다면 즉시 `gh pr ready`로 전환한다.
+- PR 본문에는 변경 요약, 문서 업데이트 여부, 실행한 테스트 결과, public API 영향 여부를 포함한다.
+
 ### 커밋 메시지 형식
 
 ```
