@@ -44,6 +44,7 @@
 - 개발 작업 시작 전 계획 수립(Plan Mode First)
 - 구현 시 테스트 가능성 우선(순수 함수/관심사 분리/작은 단위)
 - 작업 완료 시 커밋 + 푸시
+- PR 생성 시 Draft가 아닌 Ready for review 상태로 생성
 - 커밋 메시지는 한국어 Conventional Commit 형식 사용
 
 세부 규칙은 `AGENTS.md`의 Workflow Rules를 확인한다.

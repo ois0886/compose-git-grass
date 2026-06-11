@@ -1,6 +1,6 @@
 package com.inseong.gitgrass
 
-import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -31,7 +31,7 @@ class LabelRenderingTest {
                 cellSpacing = GitGrassDefaults.cellSpacing,
                 fontSize = GitGrassDefaults.labelFontSize,
                 textColor = GitGrassDefaults.colors().text,
-                scrollState = ScrollState(0),
+                scrollState = rememberLazyListState(),
                 weekLabelWidth = GitGrassDefaults.weekLabelWidth,
             )
         }

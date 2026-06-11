@@ -1,10 +1,9 @@
 package com.inseong.gitgrass
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +13,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
@@ -66,7 +70,7 @@ internal fun MonthRow(
     cellSpacing: Dp,
     fontSize: TextUnit,
     textColor: Color,
-    scrollState: ScrollState,
+    scrollState: LazyListState,
     weekLabelWidth: Dp,
 ) {
     val labelMap = remember(monthPositions) {
@@ -78,11 +82,16 @@ internal fun MonthRow(
             Spacer(modifier = Modifier.width(weekLabelWidth))
         }
 
-        Row(
-            modifier = Modifier.horizontalScroll(scrollState, enabled = false),
+        LazyRow(
+            state = scrollState,
+            userScrollEnabled = false,
             horizontalArrangement = Arrangement.spacedBy(cellSpacing),
         ) {
-            for (weekIndex in 0 until weekCount) {
+            items(
+                count = weekCount,
+                key = { weekIndex -> weekIndex },
+                contentType = { "month-label-slot" },
+            ) { weekIndex ->
                 Box(modifier = Modifier.width(cellSize).wrapContentSize(unbounded = true, align = Alignment.CenterStart)) {
                     val monthNumber = labelMap[weekIndex]
                     if (monthNumber != null) {
@@ -140,21 +149,25 @@ internal fun GrassGridContent(
     renderGrid: RenderGrid,
     cellSize: Dp,
     cellSpacing: Dp,
-    cellShape: Shape,
-    scrollState: ScrollState,
+    cellCornerRadius: Dp,
+    scrollState: LazyListState,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
-    Row(
-        modifier = Modifier.horizontalScroll(scrollState),
+    LazyRow(
+        state = scrollState,
         horizontalArrangement = Arrangement.spacedBy(cellSpacing),
     ) {
-        for (week in renderGrid) {
+        items(
+            count = renderGrid.size,
+            key = { weekIndex -> weekIndex },
+            contentType = { "grass-week" },
+        ) { weekIndex ->
             GrassWeekColumn(
-                week = week,
+                week = renderGrid[weekIndex],
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
-                cellShape = cellShape,
+                cellCornerRadius = cellCornerRadius,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )
@@ -168,31 +181,56 @@ internal fun GrassWeekColumn(
     week: List<GrassCellRenderData?>,
     cellSize: Dp,
     cellSpacing: Dp,
-    cellShape: Shape,
+    cellCornerRadius: Dp,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(cellSpacing)) {
-        for (cell in week) {
-            if (cell != null) {
-                GrassCell(
-                    color = cell.color,
-                    size = cellSize,
-                    shape = cellShape,
-                    contentDescriptionText = cell.contentDescription,
-                    clickLabelText = cell.clickLabel,
-                    onClick = onCellClick?.let { callback -> { callback(cell.date, cell.count) } },
-                    onLongClick = onCellLongClick?.let { callback -> { callback(cell.date, cell.count) } },
-                )
-            } else {
-                Spacer(modifier = Modifier.size(cellSize))
+    val weekHeight = (cellSize * DAYS_PER_WEEK) + (cellSpacing * (DAYS_PER_WEEK - 1))
+
+    Box(modifier = Modifier.width(cellSize).height(weekHeight)) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val cellSizePx = cellSize.toPx()
+            val cellSpacingPx = cellSpacing.toPx()
+            val cornerRadiusPx = cellCornerRadius.toPx()
+
+            for (index in 0 until DAYS_PER_WEEK) {
+                val cell = week.getOrNull(index)
+                if (cell != null) {
+                    val top = index.toFloat() * (cellSizePx + cellSpacingPx)
+                    drawRoundRect(
+                        color = cell.color,
+                        topLeft = Offset(0f, top),
+                        size = Size(cellSizePx, cellSizePx),
+                        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier.matchParentSize(),
+            verticalArrangement = Arrangement.spacedBy(cellSpacing),
+        ) {
+            for (index in 0 until DAYS_PER_WEEK) {
+                val cell = week.getOrNull(index)
+                if (cell != null) {
+                    GrassCell(
+                        size = cellSize,
+                        contentDescriptionText = cell.contentDescription,
+                        clickLabelText = cell.clickLabel,
+                        onClick = onCellClick?.let { callback -> { callback(cell.date, cell.count) } },
+                        onLongClick = onCellLongClick?.let { callback -> { callback(cell.date, cell.count) } },
+                    )
+                } else {
+                    Spacer(modifier = Modifier.size(cellSize))
+                }
             }
         }
     }
 }
 
 /**
- * Single rounded-rectangle cell representing one day.
+ * Transparent per-day hit target layered above the Canvas-rendered cell.
  *
  * Includes accessibility semantics with content description
  * for screen reader support.
@@ -200,26 +238,24 @@ internal fun GrassWeekColumn(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun GrassCell(
-    color: Color,
     size: Dp,
-    shape: Shape,
     contentDescriptionText: String,
     clickLabelText: String?,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)? = null,
 ) {
+    val hasActions = onClick != null || onLongClick != null
     val baseModifier = Modifier
         .size(size)
-        .background(color, shape)
         .semantics {
             contentDescription = contentDescriptionText
-            if (onClick != null) {
+            if (hasActions) {
                 role = Role.Button
             }
         }
 
     Box(
-        modifier = if (onClick != null || onLongClick != null) {
+        modifier = if (hasActions) {
             baseModifier.combinedClickable(
                 onClick = onClick ?: {},
                 onLongClick = onLongClick,

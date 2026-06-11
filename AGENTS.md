@@ -116,8 +116,9 @@ git push origin v1.1.0
 - **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`) + 임계값 검증 80% (`./gradlew :library:jacocoCoverageVerification`)
 - **Android Lint**: 정적 분석 (`./gradlew :library:lint`)
 - **Dokka 2.0**: API 문서 생성 (`./gradlew :library:dokkaGenerate`)
-- **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙 정의
+- **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙과 패키지 범위 Compose keep 규칙 정의
 - **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
+- **Compose Compiler Reports**: 필요 시 `-PcomposeCompilerReports=true`로 metrics/reports 생성
 - **CHANGELOG**: `CHANGELOG.md`에 Keep a Changelog 형식으로 변경 이력 관리
 
 ## 라이브러리 소스 구조
@@ -125,7 +126,7 @@ git push origin v1.1.0
 - `library/src/main/java/com/inseong/gitgrass/`
   - `GitGrass.kt` — 메인 컴포저블 (public API)
   - `GitGrassColors.kt` — 색상 스킴 데이터 클래스
-  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, GrassWeekColumn, GrassCell, StreakSummary, ColorLegend)
+  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, Canvas 기반 GrassWeekColumn, GrassCell hit target, StreakSummary, ColorLegend)
   - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일, 레이아웃 상수)
   - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
   - `RenderData.kt` — 셀별 count/color/접근성 라벨을 미리 계산하는 렌더링 데이터 유틸리티
@@ -138,7 +139,7 @@ git push origin v1.1.0
   - `GitGrassDefaultsTest.kt` — startDate, endDate, levelThresholds, 로케일 라벨, 색상
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
   - `RenderDataTest.kt` — 렌더링 데이터 사전 계산 검증
-  - `GridBenchmarkTest.kt` — 성능 벤치마크 (5개)
+  - `GridBenchmarkTest.kt` — 성능 벤치마크 (6개)
 - `library/src/androidTest/` — Compose UI 인스트루먼트 테스트
   - `GrassCellTest.kt` — 셀 클릭/롱클릭 콜백 검증
   - `LabelRenderingTest.kt` — 월 라벨, 주 라벨 렌더링 검증
@@ -168,6 +169,13 @@ git push origin v1.1.0
 ### 4. 작업 완료 시 커밋 & 푸시
 - 모든 작업이 완료되면 반드시 git commit 후 `git push`까지 수행한다.
 - 커밋 메시지는 한국어로, conventional commit 형식을 따른다 (예: `feat:`, `fix:`, `refactor:`, `docs:`).
+
+### 5. PR 생성 규칙
+- Branch Protection 때문에 `main`에 직접 push하지 않고 작업 브랜치를 push한 뒤 PR을 생성한다.
+- PR은 기본적으로 **Ready for review** 상태로 생성한다.
+- 사용자가 명시적으로 요청하지 않는 한 Draft PR로 생성하지 않는다.
+- `gh pr create` 사용 시 `--draft` 옵션을 넣지 않는다. 실수로 Draft PR을 만들었다면 즉시 `gh pr ready`로 전환한다.
+- PR 본문에는 변경 요약, 문서 업데이트 여부, 실행한 테스트 결과, public API 영향 여부를 포함한다.
 
 ### 커밋 메시지 형식
 
