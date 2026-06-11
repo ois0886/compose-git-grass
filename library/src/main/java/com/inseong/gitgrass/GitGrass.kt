@@ -1,20 +1,21 @@
 package com.inseong.gitgrass
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -22,6 +23,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import java.time.DayOfWeek
 import java.time.LocalDate
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 
 /**
  * Streak information calculated from contribution data.
@@ -145,10 +148,28 @@ fun GitGrass(
         )
     }
 
-    val scrollState: ScrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
+    val density = LocalDensity.current
 
-    LaunchedEffect(grid) {
-        scrollState.scrollTo(scrollState.maxValue)
+    LaunchedEffect(safeStart, safeEnd, renderGrid.size, cellSize, cellSpacing, density) {
+        if (renderGrid.isEmpty()) return@LaunchedEffect
+
+        val viewportWidth = snapshotFlow { scrollState.layoutInfo.viewportSize.width }
+            .filter { it > 0 }
+            .first()
+        val cellSizePx = with(density) { cellSize.roundToPx() }
+        val cellSpacingPx = with(density) { cellSpacing.roundToPx() }
+        val totalGridWidth =
+            (renderGrid.size * cellSizePx) + ((renderGrid.size - 1).coerceAtLeast(0) * cellSpacingPx)
+
+        if (totalGridWidth > viewportWidth) {
+            scrollState.scrollToItem(
+                index = renderGrid.lastIndex,
+                scrollOffset = cellSizePx - viewportWidth,
+            )
+        } else {
+            scrollState.scrollToItem(0)
+        }
     }
 
     val weekLabelWidth = if (showWeekLabels) GitGrassDefaults.weekLabelWidth else 0.dp
@@ -198,7 +219,7 @@ fun GitGrass(
                 renderGrid = renderGrid,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
-                cellShape = cellShape,
+                cellCornerRadius = cellCornerRadius,
                 scrollState = scrollState,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,

@@ -112,6 +112,44 @@ class GridBenchmarkTest {
     }
 
     @Test
+    fun `buildRenderGrid 3650일 Lazy Canvas 전처리 250ms 이내 완료`() {
+        val (start, contributions) = generateContributions(3650)
+        val end = LocalDate.of(2025, 12, 31)
+        val days = generateDayList(start, end)
+        val grid = buildGrid(days)
+        val colors = GitGrassDefaults.colors()
+
+        repeat(3) {
+            buildRenderGrid(
+                grid = grid,
+                contributions = contributions,
+                colors = colors,
+                levelOf = GitGrassDefaults.levelThresholds,
+                cellContentDescription = { day, count -> "$day: $count" },
+                cellClickLabel = { day -> "$day details" },
+                includeClickLabels = false,
+            )
+        }
+
+        val elapsed = measureNanoTime {
+            repeat(30) {
+                buildRenderGrid(
+                    grid = grid,
+                    contributions = contributions,
+                    colors = colors,
+                    levelOf = GitGrassDefaults.levelThresholds,
+                    cellContentDescription = { day, count -> "$day: $count" },
+                    cellClickLabel = { day -> "$day details" },
+                    includeClickLabels = false,
+                )
+            }
+        }
+        val avgMs = elapsed / 1_000_000.0 / 30
+        println("buildRenderGrid(3650일, Lazy/Canvas 전처리) 평균: %.3f ms".format(avgMs))
+        assert(avgMs < 250) { "buildRenderGrid 10년 전처리 성능 초과: $avgMs ms" }
+    }
+
+    @Test
     fun `전체 파이프라인 3650일(10년) 500ms 이내 완료`() {
         val end = LocalDate.of(2025, 12, 31)
         val start = end.minusDays(3649)

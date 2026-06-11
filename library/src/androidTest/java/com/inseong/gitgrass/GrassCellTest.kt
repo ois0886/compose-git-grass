@@ -1,6 +1,5 @@
 package com.inseong.gitgrass
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -24,9 +23,7 @@ class GrassCellTest {
 
         composeTestRule.setContent {
             GrassCell(
-                color = GitGrassDefaults.colors().levels[0],
                 size = GitGrassDefaults.cellSize,
-                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = { clicked = true },
@@ -47,9 +44,7 @@ class GrassCellTest {
 
         composeTestRule.setContent {
             GrassCell(
-                color = GitGrassDefaults.colors().levels[0],
                 size = GitGrassDefaults.cellSize,
-                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = {},
@@ -72,12 +67,31 @@ class GrassCellTest {
 
         composeTestRule.setContent {
             GrassCell(
-                color = GitGrassDefaults.colors().empty,
                 size = GitGrassDefaults.cellSize,
-                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = null,
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("$date: $count")
+            .assertExists()
+    }
+
+    @Test
+    fun gitGrass_canvasBackedCells_keepAccessibilitySemantics() {
+        val date = LocalDate.of(2025, 6, 15)
+        val count = 7
+
+        composeTestRule.setContent {
+            GitGrass(
+                contributions = mapOf(date to count),
+                startDate = date,
+                endDate = date,
+                showYearLabel = false,
+                showWeekLabels = false,
+                showMonthLabels = false,
+                showLegend = false,
             )
         }
 

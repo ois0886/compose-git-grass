@@ -26,6 +26,17 @@ android {
     }
 }
 
+composeCompiler {
+    val reportsEnabled = providers.gradleProperty("composeCompilerReports")
+        .map { it.equals("true", ignoreCase = true) }
+        .getOrElse(false)
+
+    if (reportsEnabled) {
+        reportsDestination = layout.buildDirectory.dir("compose_compiler/reports")
+        metricsDestination = layout.buildDirectory.dir("compose_compiler/metrics")
+    }
+}
+
 jacoco {
     toolVersion = "0.8.12"
 }

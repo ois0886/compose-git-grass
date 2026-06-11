@@ -57,11 +57,11 @@ fun GitGrass(...) {
     val grid = remember(days, weekStartDay) { buildGrid(days, weekStartDay) }
 
     // 3. Compose 상태
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
 
     // 4. 부수 효과 (LaunchedEffect)
     LaunchedEffect(grid) {
-        scrollState.scrollTo(scrollState.maxValue)
+        // 최신 날짜가 보이도록 lazy list 위치 조정
     }
 
     // 5. 레이아웃 구성
@@ -156,10 +156,10 @@ UI 렌더링 (Composable + remember)
 ```
 GitGrass (루트 조율자)
 ├── YearLabel
-├── MonthRow (scrollState 공유)
+├── MonthRow (LazyListState 공유)
 ├── WeekLabelColumn
-├── GrassGridContent (scrollState 공유)
-│   └── GrassWeekColumn → GrassCell
+├── GrassGridContent (LazyListState 공유)
+│   └── GrassWeekColumn (Canvas) → GrassCell (hit target)
 ├── StreakSummary
 └── ColorLegend
 ```
@@ -285,11 +285,28 @@ val renderGrid = remember(grid, safeContributions, colors, levelOf) {
 
 정규화가 필요 없는 입력 컬렉션은 원본을 그대로 반환한다. 값 변경이 실제로 필요한 경우에만 새 컬렉션을 만든다.
 
+### Lazy 렌더링 우선
+
+주 단위처럼 반복 개수가 날짜 범위에 비례하는 UI는 eager `Row`보다 `LazyRow`를 우선한다. 월 라벨과 그리드는 같은 `LazyListState`를 공유해 정렬과 스크롤 동기화를 유지한다.
+
+### Canvas와 Semantics 분리
+
+반복 셀의 시각 렌더링은 Canvas로 합치되, 접근성/클릭/롱클릭은 별도의 hit target 컴포저블로 유지한다. 사용자가 렌더러를 직접 선택하는 public 옵션은 실제 요구가 생기기 전까지 추가하지 않는다.
+
+### Consumer Rules 범위 제한
+
+AAR consumer ProGuard 규칙은 앱 전체에 영향을 주므로 `com.inseong.gitgrass.**`처럼 라이브러리 패키지 범위로 한정한다. 전역 `class *` keep 규칙은 피한다.
+
+### Compose Compiler 리포트
+
+Compose compiler metrics/reports는 기본 빌드에 영향을 주지 않도록 Gradle property로 opt-in한다. 필요할 때만 `-PcomposeCompilerReports=true`로 생성한다.
+
 ### 벤치마크 기준
 
 | 연산 | 데이터 규모 | 제한 |
 |------|------------|------|
 | 단일 연산 (generateDayList, buildGrid, buildRenderGrid, calculateStreak) | 1,000일 | 100회 평균 < 100ms |
+| Lazy/Canvas 렌더링 데이터 준비 (buildRenderGrid) | 3,650일 (10년) | 30회 평균 < 250ms |
 | 전체 파이프라인 | 3,650일 (10년) | 10회 평균 < 500ms |
 
 새로운 유틸리티 함수 추가 시 대량 데이터 벤치마크를 `GridBenchmarkTest.kt`에 추가한다.
@@ -575,8 +592,8 @@ fun GitGrass(...) {
 // O: 컴포지션 — 작은 컴포저블 조합
 GitGrass (루트 조율자)
 ├── YearLabel          // 독립 컴포넌트
-├── MonthRow           // scrollState를 파라미터로 주입
-├── GrassGridContent   // 데이터를 파라미터로 주입
+├── MonthRow           // LazyListState를 파라미터로 주입
+├── GrassGridContent   // 렌더링 데이터와 LazyListState를 파라미터로 주입
 └── ColorLegend        // 독립 컴포넌트
 
 // X: 상속 기반 접근

@@ -17,6 +17,11 @@
 - 셀/범례 렌더링에서 Shape 재사용 및 불필요한 clip 제거로 반복 셀 할당 비용 감소
 - 셀별 count, color, 접근성 라벨을 렌더링 전용 데이터로 미리 계산해 리컴포지션 중 반복 계산 감소
 - 샘플 앱에서 날짜 범위, 로케일 라벨, 커스텀 색상 팔레트를 `remember`로 재사용하도록 개선
+- 그리드와 월 라벨 행을 주 단위 `LazyRow`로 전환해 긴 날짜 범위에서 화면 밖 UI 구성 비용 감소
+- 셀 색상 렌더링을 내부 Canvas 경로로 전환하고, 접근성/클릭/롱클릭은 투명 hit target overlay로 유지
+- ProGuard consumer rules의 Compose/Immutable keep 범위를 라이브러리 패키지로 축소
+- `-PcomposeCompilerReports=true` 사용 시 Compose compiler metrics/reports를 생성하도록 opt-in 설정 추가
+- Lazy/Canvas 렌더링 데이터 준비 경로의 10년 범위 성능 벤치마크 추가
 
 ## [1.1.0] - 2026-03-13
 

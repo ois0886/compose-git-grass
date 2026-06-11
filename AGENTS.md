@@ -116,8 +116,9 @@ git push origin v1.1.0
 - **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`) + 임계값 검증 80% (`./gradlew :library:jacocoCoverageVerification`)
 - **Android Lint**: 정적 분석 (`./gradlew :library:lint`)
 - **Dokka 2.0**: API 문서 생성 (`./gradlew :library:dokkaGenerate`)
-- **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙 정의
+- **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙과 패키지 범위 Compose keep 규칙 정의
 - **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
+- **Compose Compiler Reports**: 필요 시 `-PcomposeCompilerReports=true`로 metrics/reports 생성
 - **CHANGELOG**: `CHANGELOG.md`에 Keep a Changelog 형식으로 변경 이력 관리
 
 ## 라이브러리 소스 구조
@@ -125,7 +126,7 @@ git push origin v1.1.0
 - `library/src/main/java/com/inseong/gitgrass/`
   - `GitGrass.kt` — 메인 컴포저블 (public API)
   - `GitGrassColors.kt` — 색상 스킴 데이터 클래스
-  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, GrassWeekColumn, GrassCell, StreakSummary, ColorLegend)
+  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, Canvas 기반 GrassWeekColumn, GrassCell hit target, StreakSummary, ColorLegend)
   - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일, 레이아웃 상수)
   - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
   - `RenderData.kt` — 셀별 count/color/접근성 라벨을 미리 계산하는 렌더링 데이터 유틸리티
@@ -138,7 +139,7 @@ git push origin v1.1.0
   - `GitGrassDefaultsTest.kt` — startDate, endDate, levelThresholds, 로케일 라벨, 색상
   - `LevelToColorTest.kt` — 색상 매핑 (8개)
   - `RenderDataTest.kt` — 렌더링 데이터 사전 계산 검증
-  - `GridBenchmarkTest.kt` — 성능 벤치마크 (5개)
+  - `GridBenchmarkTest.kt` — 성능 벤치마크 (6개)
 - `library/src/androidTest/` — Compose UI 인스트루먼트 테스트
   - `GrassCellTest.kt` — 셀 클릭/롱클릭 콜백 검증
   - `LabelRenderingTest.kt` — 월 라벨, 주 라벨 렌더링 검증

@@ -15,10 +15,10 @@
     public <methods>;
 }
 
-# Compose @Composable 어노테이션 메서드 보호
--keepclassmembers class * {
+# Compose @Composable 어노테이션 메서드 보호 (라이브러리 패키지로 한정)
+-keepclassmembers class com.inseong.gitgrass.** {
     @androidx.compose.runtime.Composable <methods>;
 }
 
-# @Immutable 어노테이션 클래스 보호 (Compose 안정성 추론)
--keep @androidx.compose.runtime.Immutable class * { *; }
+# @Immutable 어노테이션 클래스 보호 (Compose 안정성 추론, 라이브러리 패키지로 한정)
+-keep @androidx.compose.runtime.Immutable class com.inseong.gitgrass.** { *; }

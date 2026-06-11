@@ -63,6 +63,7 @@ GitGrass(
 
 대부분의 1년 단위 그래프는 기본 설정만으로 충분히 가볍게 동작합니다. 여러 개의 그래프를 한 화면에 렌더링하거나 5년 이상의 긴 범위를 표시한다면 아래 원칙을 권장합니다:
 
+- 별도 `renderMode`를 고를 필요는 없습니다. 내부에서 주 단위 lazy 렌더링과 Canvas 기반 셀 그리기를 자동으로 사용합니다.
 - `contributions`, `startDate`, `endDate`, 로케일 라벨, 커스텀 색상 팔레트는 `remember`나 ViewModel 상태로 안정적으로 전달하세요.
 - 필요 없는 보조 UI는 `showMonthLabels`, `showStreak`, `showLegend`를 `false`로 꺼두면 해당 계산과 렌더링 비용을 줄일 수 있습니다.
 - 매 리컴포지션마다 `LocalDate.now()`, `localizedMonthLabels()`, `GitGrassColors(...)`를 새로 만들기보다 한 번 계산한 값을 재사용하세요.
@@ -261,7 +262,8 @@ GitGrass(
 - **Pure Compose Foundation** - Material3 의존 없이 Foundation의 `BasicText`만 사용하여, 어떤 디자인 시스템을 쓰는 프로젝트에서도 충돌 없이 동작합니다.
 - **유연한 색상 레벨** - 고정된 `level1`~`level4` 대신 `levels: List<Color>`를 사용합니다. 3단계든, 5단계든, 10단계든 자유롭게 지정할 수 있습니다.
 - **픽셀 단위 월 라벨 정렬** - 월 라벨이 그리드와 동일한 `Arrangement.spacedBy` + 고정 너비 슬롯 구조를 사용하여, 어떤 셀 크기에서도 정확하게 정렬됩니다.
-- **공유 ScrollState** - 월 라벨 행과 그리드가 하나의 `ScrollState`를 공유하여 가로 스크롤 시 항상 동기화됩니다.
+- **자동 최적화 렌더링** - 긴 날짜 범위에서는 주 단위 `LazyRow`가 화면에 필요한 열만 구성하고, 셀 색상은 Canvas로 그려 반복 노드 비용을 줄입니다.
+- **공유 LazyListState** - 월 라벨 행과 그리드가 하나의 `LazyListState`를 공유하여 가로 스크롤 시 항상 동기화됩니다.
 - **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 60+ 유닛 테스트와 Compose UI 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스, UI 인터랙션을 검증합니다.
 - **접근성** - 모든 셀에 contentDescription, semantics 적용으로 스크린 리더를 지원합니다.
 - **오늘 날짜로 자동 스크롤** - `LaunchedEffect`로 첫 컴포지션 시 가장 최근 날짜(오른쪽 끝)로 자동 스크롤됩니다.
