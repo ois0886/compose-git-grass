@@ -1,6 +1,7 @@
 package com.inseong.gitgrass
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
@@ -63,6 +64,7 @@ class GridUtilsTest {
         )
         val result = normalizeContributions(input)
 
+        assertSame(input, result)
         assertEquals(input, result)
     }
 

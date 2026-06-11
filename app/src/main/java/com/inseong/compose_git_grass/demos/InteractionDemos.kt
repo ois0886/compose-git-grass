@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,11 @@ import java.time.LocalDate
 
 @Composable
 internal fun ToggleVisibilityDemo(data: Map<LocalDate, Int>) {
+    val dateRange = remember {
+        val end = LocalDate.now()
+        end.minusMonths(3) to end
+    }
+
     SectionCard(
         title = "Toggle Visibility",
         description = "All labels/streak/legend hidden vs shown",
@@ -30,8 +36,8 @@ internal fun ToggleVisibilityDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(3),
-            endDate = LocalDate.now(),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
             showYearLabel = false,
             showWeekLabels = false,
             showMonthLabels = false,
@@ -50,8 +56,8 @@ internal fun ToggleVisibilityDemo(data: Map<LocalDate, Int>) {
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(3),
-            endDate = LocalDate.now(),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
             showYearLabel = true,
             showWeekLabels = true,
             showMonthLabels = true,
@@ -67,6 +73,10 @@ internal fun CellClickDemo(
     snackbarHostState: SnackbarHostState,
 ) {
     val scope = rememberCoroutineScope()
+    val dateRange = remember {
+        val end = LocalDate.now()
+        end.minusMonths(3) to end
+    }
 
     SectionCard(
         title = "Cell Click & Long-Click",
@@ -75,8 +85,8 @@ internal fun CellClickDemo(
         GitGrass(
             contributions = data,
             modifier = Modifier.fillMaxWidth(),
-            startDate = LocalDate.now().minusMonths(3),
-            endDate = LocalDate.now(),
+            startDate = dateRange.first,
+            endDate = dateRange.second,
             showStreak = true,
             onCellClick = { date, count ->
                 scope.launch {

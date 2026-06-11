@@ -1,11 +1,11 @@
 package com.inseong.gitgrass
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -26,9 +26,7 @@ class GrassCellTest {
             GrassCell(
                 color = GitGrassDefaults.colors().levels[0],
                 size = GitGrassDefaults.cellSize,
-                cornerRadius = GitGrassDefaults.cellCornerRadius,
-                date = date,
-                count = count,
+                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = { clicked = true },
@@ -51,9 +49,7 @@ class GrassCellTest {
             GrassCell(
                 color = GitGrassDefaults.colors().levels[0],
                 size = GitGrassDefaults.cellSize,
-                cornerRadius = GitGrassDefaults.cellCornerRadius,
-                date = date,
-                count = count,
+                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = {},
@@ -78,9 +74,7 @@ class GrassCellTest {
             GrassCell(
                 color = GitGrassDefaults.colors().empty,
                 size = GitGrassDefaults.cellSize,
-                cornerRadius = GitGrassDefaults.cellCornerRadius,
-                date = date,
-                count = count,
+                shape = RoundedCornerShape(GitGrassDefaults.cellCornerRadius),
                 contentDescriptionText = "$date: $count",
                 clickLabelText = "$date details",
                 onClick = null,

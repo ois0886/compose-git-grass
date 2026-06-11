@@ -59,6 +59,28 @@ GitGrass(
 )
 ```
 
+## Performance Notes
+
+대부분의 1년 단위 그래프는 기본 설정만으로 충분히 가볍게 동작합니다. 여러 개의 그래프를 한 화면에 렌더링하거나 5년 이상의 긴 범위를 표시한다면 아래 원칙을 권장합니다:
+
+- `contributions`, `startDate`, `endDate`, 로케일 라벨, 커스텀 색상 팔레트는 `remember`나 ViewModel 상태로 안정적으로 전달하세요.
+- 필요 없는 보조 UI는 `showMonthLabels`, `showStreak`, `showLegend`를 `false`로 꺼두면 해당 계산과 렌더링 비용을 줄일 수 있습니다.
+- 매 리컴포지션마다 `LocalDate.now()`, `localizedMonthLabels()`, `GitGrassColors(...)`를 새로 만들기보다 한 번 계산한 값을 재사용하세요.
+
+```kotlin
+val endDate = remember { LocalDate.now() }
+val startDate = remember(endDate) { endDate.minusMonths(6) }
+val monthLabels = remember { GitGrassDefaults.localizedMonthLabels() }
+
+GitGrass(
+    contributions = contributions,
+    startDate = startDate,
+    endDate = endDate,
+    monthLabels = monthLabels,
+    showStreak = false,
+)
+```
+
 ## Customization
 
 ### Colors

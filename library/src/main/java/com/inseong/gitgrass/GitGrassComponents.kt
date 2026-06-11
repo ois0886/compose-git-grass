@@ -14,14 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -143,7 +142,7 @@ internal fun GrassGridContent(
     colors: GitGrassColors,
     cellSize: Dp,
     cellSpacing: Dp,
-    cellCornerRadius: Dp,
+    cellShape: Shape,
     levelOf: (Int) -> Int,
     scrollState: ScrollState,
     cellContentDescription: (LocalDate, Int) -> String,
@@ -162,7 +161,7 @@ internal fun GrassGridContent(
                 colors = colors,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
-                cellCornerRadius = cellCornerRadius,
+                cellShape = cellShape,
                 levelOf = levelOf,
                 cellContentDescription = cellContentDescription,
                 cellClickLabel = cellClickLabel,
@@ -181,7 +180,7 @@ internal fun GrassWeekColumn(
     colors: GitGrassColors,
     cellSize: Dp,
     cellSpacing: Dp,
-    cellCornerRadius: Dp,
+    cellShape: Shape,
     levelOf: (Int) -> Int,
     cellContentDescription: (LocalDate, Int) -> String,
     cellClickLabel: (LocalDate) -> String,
@@ -194,14 +193,17 @@ internal fun GrassWeekColumn(
                 val count = contributions[day] ?: 0
                 val level = levelOf(count)
                 val color = levelToColor(level, colors)
+                val clickLabelText = if (onCellClick != null || onCellLongClick != null) {
+                    cellClickLabel(day)
+                } else {
+                    null
+                }
                 GrassCell(
                     color = color,
                     size = cellSize,
-                    cornerRadius = cellCornerRadius,
-                    date = day,
-                    count = count,
+                    shape = cellShape,
                     contentDescriptionText = cellContentDescription(day, count),
-                    clickLabelText = cellClickLabel(day),
+                    clickLabelText = clickLabelText,
                     onClick = onCellClick?.let { callback -> { callback(day, count) } },
                     onLongClick = onCellLongClick?.let { callback -> { callback(day, count) } },
                 )
@@ -223,19 +225,14 @@ internal fun GrassWeekColumn(
 internal fun GrassCell(
     color: Color,
     size: Dp,
-    cornerRadius: Dp,
-    date: LocalDate,
-    count: Int,
+    shape: Shape,
     contentDescriptionText: String,
-    clickLabelText: String,
+    clickLabelText: String?,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
-
     val baseModifier = Modifier
         .size(size)
-        .clip(shape)
         .background(color, shape)
         .semantics {
             contentDescription = contentDescriptionText
@@ -292,12 +289,11 @@ internal fun ColorLegend(
     colors: GitGrassColors,
     cellSize: Dp,
     cellSpacing: Dp,
-    cornerRadius: Dp,
+    shape: Shape,
     fontSize: TextUnit,
     lessLabel: String,
     moreLabel: String,
 ) {
-    val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
     val textStyle = TextStyle(fontSize = fontSize, color = colors.text)
 
     Row(
@@ -309,7 +305,6 @@ internal fun ColorLegend(
         Box(
             modifier = Modifier
                 .size(cellSize)
-                .clip(shape)
                 .background(colors.empty, shape)
                 .semantics { contentDescription = "Level 0" },
         )
@@ -318,7 +313,6 @@ internal fun ColorLegend(
             Box(
                 modifier = Modifier
                     .size(cellSize)
-                    .clip(shape)
                     .background(levelColor, shape)
                     .semantics { contentDescription = "Level ${index + 1}" },
             )

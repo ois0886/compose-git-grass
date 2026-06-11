@@ -254,6 +254,27 @@ val streakInfo = remember(safeContributions, days) {
 val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
 ```
 
+### 조건부 계산
+
+숨겨진 UI에만 필요한 파생 값은 토글이 켜졌을 때만 계산한다:
+
+```kotlin
+val monthPositions = remember(showMonthLabels, grid) {
+    if (showMonthLabels) createMonthLabels(grid) else emptyList()
+}
+val streakInfo = remember(showStreak, safeContributions, days, safeEnd) {
+    if (showStreak) calculateStreak(safeContributions, days, safeEnd) else null
+}
+```
+
+### 반복 렌더링 객체 재사용
+
+셀처럼 반복 횟수가 많은 UI에서 동일한 객체를 각 셀마다 생성하지 않는다. Shape, TextStyle, 라벨 맵 등은 가능한 상위 컴포저블에서 한 번 만들고 하위 컴포넌트로 전달한다.
+
+### 컬렉션 복사 최소화
+
+정규화가 필요 없는 입력 컬렉션은 원본을 그대로 반환한다. 값 변경이 실제로 필요한 경우에만 새 컬렉션을 만든다.
+
 ### 벤치마크 기준
 
 | 연산 | 데이터 규모 | 제한 |

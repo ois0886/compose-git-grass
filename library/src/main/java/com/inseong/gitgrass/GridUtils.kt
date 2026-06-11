@@ -24,6 +24,8 @@ internal fun normalizeDateRange(
 internal fun normalizeContributions(
     contributions: ContributionData,
 ): ContributionData {
+    if (contributions.values.none { it < 0 }) return contributions
+
     return contributions.mapValues { (_, v) -> v.coerceAtLeast(0) }
 }
 

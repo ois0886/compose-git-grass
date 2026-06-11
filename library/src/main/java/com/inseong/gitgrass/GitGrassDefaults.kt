@@ -23,19 +23,8 @@ object GitGrassDefaults {
     /** Number of days in a week. Used for grid row count and label sizing. */
     internal const val DAYS_PER_WEEK = 7
 
-    /** Default width for the week label column. */
-    val weekLabelWidth: Dp = 28.dp
-
-    // ── Layout spacing constants ────────────────────────────────────
-    internal val yearLabelBottomSpacing: Dp = 4.dp
-    internal val monthRowBottomSpacing: Dp = 2.dp
-    internal val streakTopSpacing: Dp = 8.dp
-    internal val legendTopSpacing: Dp = 8.dp
-    internal val streakItemSpacing: Dp = 16.dp
-
-    /** GitHub light theme colors. */
     @Suppress("DEPRECATION")
-    fun colors(): GitGrassColors = GitGrassColors(
+    private val lightColorScheme = GitGrassColors(
         empty = Color(0xFFEBEDF0),
         levels = listOf(
             Color(0xFF9BE9A8),
@@ -47,9 +36,8 @@ object GitGrassDefaults {
         border = Color(0xFFD0D7DE),
     )
 
-    /** GitHub dark theme colors. */
     @Suppress("DEPRECATION")
-    fun darkColors(): GitGrassColors = GitGrassColors(
+    private val darkColorScheme = GitGrassColors(
         empty = Color(0xFF161B22),
         levels = listOf(
             Color(0xFF0E4429),
@@ -60,6 +48,22 @@ object GitGrassDefaults {
         text = Color(0xFFC9D1D9),
         border = Color(0xFF30363D),
     )
+
+    /** Default width for the week label column. */
+    val weekLabelWidth: Dp = 28.dp
+
+    // ── Layout spacing constants ────────────────────────────────────
+    internal val yearLabelBottomSpacing: Dp = 4.dp
+    internal val monthRowBottomSpacing: Dp = 2.dp
+    internal val streakTopSpacing: Dp = 8.dp
+    internal val legendTopSpacing: Dp = 8.dp
+    internal val streakItemSpacing: Dp = 16.dp
+
+    /** GitHub light theme colors. */
+    fun colors(): GitGrassColors = lightColorScheme
+
+    /** GitHub dark theme colors. */
+    fun darkColors(): GitGrassColors = darkColorScheme
 
     /**
      * English month labels. Index 0 is empty so that `monthLabels[date.monthValue]`
