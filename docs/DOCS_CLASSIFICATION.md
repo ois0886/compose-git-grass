@@ -51,7 +51,7 @@
 - 빌드/테스트/배포 파이프라인 변경: `AGENTS.md`, `CLAUDE.md`
 - 브랜치/커밋/PR 운영 규칙 변경: `AGENTS.md`, 요약 반영(`CLAUDE.md`)
 - 코드 작성 규칙/리뷰 기준 변경: `CODE_QUALITY.md`, 요약 반영(`AGENTS.md`, `CLAUDE.md`)
-- 릴리즈 태그/버전 변경: `CHANGELOG.md`, `README.md` 버전 표기
+- 릴리즈 태그/버전 변경: `README.md`, `CHANGELOG.md`, `AGENTS.md`, 요약 반영(`CLAUDE.md`)
 
 ## 4. 이번 점검 기록 (2026-04-10)
 
