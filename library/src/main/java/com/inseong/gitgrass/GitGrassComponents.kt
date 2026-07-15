@@ -3,10 +3,13 @@ package com.inseong.gitgrass
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -25,9 +28,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,60 +61,28 @@ internal fun YearLabel(
     )
 }
 
-/**
- * Horizontal row of month abbreviations that scrolls in sync with the grid.
- *
- * Uses the same column layout as [GrassGridContent] — each week is a fixed-width
- * [cellSize] slot with [cellSpacing] gaps — ensuring pixel-perfect alignment.
- * The [scrollState] is shared with the grid (scrolling disabled here) so it
- * follows the grid's scroll position exactly.
- */
+/** One month-label slot rendered inside the same lazy item as its week column. */
 @Composable
-internal fun MonthRow(
-    weekCount: Int,
-    monthPositions: MonthPositions,
-    monthLabels: List<String>,
-    cellSize: Dp,
-    cellSpacing: Dp,
+internal fun MonthLabelSlot(
+    text: String,
+    slotWidth: Dp,
     fontSize: TextUnit,
     textColor: Color,
-    scrollState: LazyListState,
-    weekLabelWidth: Dp,
 ) {
-    val labelMap = remember(monthPositions) {
-        monthPositions.associate { (weekIndex, month) -> weekIndex to month }
-    }
+    val placeholder = text.ifEmpty { "\u00A0" }
+    val textModifier = if (text.isEmpty()) Modifier.clearAndSetSemantics { } else Modifier
 
-    Row {
-        if (weekLabelWidth.value > 0f) {
-            Spacer(modifier = Modifier.width(weekLabelWidth))
-        }
-
-        LazyRow(
-            state = scrollState,
-            userScrollEnabled = false,
-            horizontalArrangement = Arrangement.spacedBy(cellSpacing),
-        ) {
-            items(
-                count = weekCount,
-                key = { weekIndex -> weekIndex },
-                contentType = { "month-label-slot" },
-            ) { weekIndex ->
-                Box(modifier = Modifier.width(cellSize).wrapContentSize(unbounded = true, align = Alignment.CenterStart)) {
-                    val monthNumber = labelMap[weekIndex]
-                    if (monthNumber != null) {
-                        val label = monthLabels.getOrElse(monthNumber) { "" }
-                        if (label.isNotEmpty()) {
-                            BasicText(
-                                text = label,
-                                softWrap = false,
-                                style = TextStyle(fontSize = fontSize, color = textColor),
-                            )
-                        }
-                    }
-                }
-            }
-        }
+    Box(
+        modifier = Modifier
+            .width(slotWidth)
+            .wrapContentSize(unbounded = true, align = Alignment.CenterStart),
+    ) {
+        BasicText(
+            text = placeholder,
+            modifier = textModifier,
+            softWrap = false,
+            style = TextStyle(fontSize = fontSize, color = textColor),
+        )
     }
 }
 
@@ -147,15 +123,26 @@ internal fun WeekLabelColumn(
 @Composable
 internal fun GrassGridContent(
     renderGrid: RenderGrid,
+    monthPositions: MonthPositions,
+    monthLabels: List<String>,
+    showMonthLabels: Boolean,
     cellSize: Dp,
     cellSpacing: Dp,
     cellCornerRadius: Dp,
+    labelFontSize: TextUnit,
+    textColor: Color,
     scrollState: LazyListState,
+    selection: GitGrassSelection?,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
+    val labelMap = remember(monthPositions) {
+        monthPositions.associate { (weekIndex, month) -> weekIndex to month }
+    }
+
     LazyRow(
         state = scrollState,
+        contentPadding = PaddingValues(end = cellSize + cellSpacing),
         horizontalArrangement = Arrangement.spacedBy(cellSpacing),
     ) {
         items(
@@ -163,14 +150,31 @@ internal fun GrassGridContent(
             key = { weekIndex -> weekIndex },
             contentType = { "grass-week" },
         ) { weekIndex ->
-            GrassWeekColumn(
-                week = renderGrid[weekIndex],
-                cellSize = cellSize,
-                cellSpacing = cellSpacing,
-                cellCornerRadius = cellCornerRadius,
-                onCellClick = onCellClick,
-                onCellLongClick = onCellLongClick,
-            )
+            Column {
+                if (showMonthLabels) {
+                    val monthNumber = labelMap[weekIndex]
+                    val monthLabel = monthNumber?.let { month ->
+                        monthLabels.getOrElse(month) { "" }
+                    }.orEmpty()
+                    MonthLabelSlot(
+                        text = monthLabel,
+                        slotWidth = cellSize,
+                        fontSize = labelFontSize,
+                        textColor = textColor,
+                    )
+                    Spacer(modifier = Modifier.height(GitGrassDefaults.monthRowBottomSpacing))
+                }
+
+                GrassWeekColumn(
+                    week = renderGrid[weekIndex],
+                    cellSize = cellSize,
+                    cellSpacing = cellSpacing,
+                    cellCornerRadius = cellCornerRadius,
+                    selection = selection,
+                    onCellClick = onCellClick,
+                    onCellLongClick = onCellLongClick,
+                )
+            }
         }
     }
 }
@@ -182,6 +186,7 @@ internal fun GrassWeekColumn(
     cellSize: Dp,
     cellSpacing: Dp,
     cellCornerRadius: Dp,
+    selection: GitGrassSelection?,
     onCellClick: ((LocalDate, Int) -> Unit)?,
     onCellLongClick: ((LocalDate, Int) -> Unit)?,
 ) {
@@ -203,6 +208,23 @@ internal fun GrassWeekColumn(
                         size = Size(cellSizePx, cellSizePx),
                         cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
                     )
+
+                    if (selection?.date == cell.date) {
+                        val strokeWidthPx = selection.outlineWidth.toPx()
+                            .coerceIn(0f, cellSizePx.coerceAtLeast(0f))
+                        if (strokeWidthPx > 0f) {
+                            val inset = strokeWidthPx / 2f
+                            val selectedSize = (cellSizePx - strokeWidthPx).coerceAtLeast(0f)
+                            val selectedRadius = (cornerRadiusPx - inset).coerceAtLeast(0f)
+                            drawRoundRect(
+                                color = selection.outlineColor,
+                                topLeft = Offset(inset, top + inset),
+                                size = Size(selectedSize, selectedSize),
+                                cornerRadius = CornerRadius(selectedRadius, selectedRadius),
+                                style = Stroke(width = strokeWidthPx),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -218,6 +240,7 @@ internal fun GrassWeekColumn(
                         size = cellSize,
                         contentDescriptionText = cell.contentDescription,
                         clickLabelText = cell.clickLabel,
+                        isSelected = selection?.date == cell.date,
                         onClick = onCellClick?.let { callback -> { callback(cell.date, cell.count) } },
                         onLongClick = onCellLongClick?.let { callback -> { callback(cell.date, cell.count) } },
                     )
@@ -241,6 +264,7 @@ internal fun GrassCell(
     size: Dp,
     contentDescriptionText: String,
     clickLabelText: String?,
+    isSelected: Boolean = false,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)? = null,
 ) {
@@ -249,22 +273,48 @@ internal fun GrassCell(
         .size(size)
         .semantics {
             contentDescription = contentDescriptionText
+            if (isSelected) {
+                selected = true
+            }
             if (hasActions) {
                 role = Role.Button
             }
         }
 
-    Box(
-        modifier = if (hasActions) {
+    val interactionModifier = when {
+        onClick != null && onLongClick != null -> {
             baseModifier.combinedClickable(
-                onClick = onClick ?: {},
+                onClick = onClick,
                 onLongClick = onLongClick,
                 onClickLabel = clickLabelText,
             )
-        } else {
+        }
+
+        onClick != null -> {
+            baseModifier.clickable(
+                role = Role.Button,
+                onClickLabel = clickLabelText,
+                onClick = onClick,
+            )
+        }
+
+        onLongClick != null -> {
             baseModifier
-        },
-    )
+                .pointerInput(onLongClick) {
+                    detectTapGestures(onLongPress = { onLongClick() })
+                }
+                .semantics {
+                    onLongClick {
+                        onLongClick()
+                        true
+                    }
+                }
+        }
+
+        else -> baseModifier
+    }
+
+    Box(modifier = interactionModifier)
 }
 
 /** Displays max and current streak counts side by side. */

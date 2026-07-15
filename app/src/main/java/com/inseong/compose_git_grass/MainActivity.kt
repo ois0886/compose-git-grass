@@ -5,32 +5,32 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.inseong.compose_git_grass.data.generateSampleData
-import com.inseong.compose_git_grass.data.generateSparseData
-import com.inseong.compose_git_grass.demos.BasicDemo
-import com.inseong.compose_git_grass.demos.CellClickDemo
-import com.inseong.compose_git_grass.demos.CustomCellSizingDemo
-import com.inseong.compose_git_grass.demos.CustomColorsDemo
-import com.inseong.compose_git_grass.demos.CustomDateRangeDemo
-import com.inseong.compose_git_grass.demos.CustomLevelMappingDemo
-import com.inseong.compose_git_grass.demos.DarkThemeDemo
-import com.inseong.compose_git_grass.demos.KoreanLocalizationDemo
-import com.inseong.compose_git_grass.demos.ToggleVisibilityDemo
-import com.inseong.compose_git_grass.demos.WeekStartDayDemo
+import com.inseong.compose_git_grass.demos.FeaturedContributionDemo
+import com.inseong.compose_git_grass.demos.LayoutGallery
+import com.inseong.compose_git_grass.demos.LevelsGallery
+import com.inseong.compose_git_grass.demos.LocalizationGallery
+import com.inseong.compose_git_grass.demos.ThemeGallery
 import com.inseong.compose_git_grass.ui.theme.ComposegitgrassTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,8 +43,27 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background,
                     topBar = {
-                        TopAppBar(title = { Text("compose-git-grass") })
+                        TopAppBar(
+                            title = {
+                                Column {
+                                    Text(
+                                        text = "compose-git-grass",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(
+                                        text = "Jetpack Compose contribution graph",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.background,
+                            ),
+                        )
                     },
                     snackbarHost = { SnackbarHost(snackbarHostState) },
                 ) { innerPadding ->
@@ -64,22 +83,61 @@ fun GitGrassShowcase(
     snackbarHostState: SnackbarHostState,
 ) {
     val sampleData = remember { generateSampleData() }
-    val sparseData = remember { generateSparseData() }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 18.dp, top = 18.dp, end = 18.dp, bottom = 36.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        item { BasicDemo(sampleData) }
-        item { DarkThemeDemo(sampleData) }
-        item { CustomDateRangeDemo(sparseData) }
-        item { WeekStartDayDemo(sampleData) }
-        item { KoreanLocalizationDemo(sampleData) }
-        item { CustomCellSizingDemo(sampleData) }
-        item { ToggleVisibilityDemo(sampleData) }
-        item { CustomLevelMappingDemo(sampleData) }
-        item { CustomColorsDemo(sampleData) }
-        item { CellClickDemo(sampleData, snackbarHostState) }
+        item {
+            ShowcaseIntro()
+        }
+        item {
+            FeaturedContributionDemo(sampleData, snackbarHostState)
+        }
+        item {
+            GalleryIntro()
+        }
+        item {
+            LayoutGallery(sampleData)
+        }
+        item {
+            LocalizationGallery(sampleData)
+        }
+        item {
+            ThemeGallery(sampleData)
+        }
+        item {
+            LevelsGallery(sampleData)
+        }
+    }
+}
+
+@Composable
+private fun ShowcaseIntro() {
+    Column {
+        Text(
+            text = "Daily activity, clearly composed.",
+            style = MaterialTheme.typography.headlineMedium,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "A lightweight, Foundation-only contribution graph with controlled selection, localization, and accessible interactions.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun GalleryIntro() {
+    Column {
+        Text(text = "API gallery", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "The core customization paths, grouped by intent.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

@@ -57,6 +57,7 @@ data class GitGrassStreakInfo(
  * @param colors Color scheme for cells and labels. See [GitGrassDefaults.colors] and [GitGrassDefaults.darkColors].
  * @param monthLabels Month name strings indexed by [LocalDate.getMonthValue] (index 0 unused).
  * @param weekLabels Weekday name strings in order starting from [weekStartDay] (size 7).
+ *   The default automatically follows [weekStartDay].
  * @param cellSize Width and height of each day cell.
  * @param cellSpacing Gap between cells and between week columns.
  * @param cellCornerRadius Corner radius for each cell's rounded rectangle.
@@ -75,6 +76,8 @@ data class GitGrassStreakInfo(
  * @param cellClickLabel Formats the accessibility click label for each cell.
  *   Receives the cell's date. Default: `"$date details"`.
  * @param levelOf Maps a contribution count to a color level index (0 = empty, 1+ = [GitGrassColors.levels]).
+ * @param selection Optional controlled cell selection. The graph only renders this value and never
+ *   changes it internally. Use [onCellClick] to update application state.
  * @param onCellClick Optional callback invoked when a cell is tapped, receiving the date and count.
  * @param onCellLongClick Optional callback invoked when a cell is long-pressed, receiving the date and count.
  */
@@ -87,7 +90,7 @@ fun GitGrass(
     weekStartDay: DayOfWeek = DayOfWeek.MONDAY,
     colors: GitGrassColors = GitGrassDefaults.colors(),
     monthLabels: List<String> = GitGrassDefaults.monthLabels,
-    weekLabels: List<String> = GitGrassDefaults.weekLabels,
+    weekLabels: List<String> = GitGrassDefaults.weekLabelsFor(weekStartDay),
     cellSize: Dp = GitGrassDefaults.cellSize,
     cellSpacing: Dp = GitGrassDefaults.cellSpacing,
     cellCornerRadius: Dp = GitGrassDefaults.cellCornerRadius,
@@ -106,6 +109,7 @@ fun GitGrass(
     },
     cellClickLabel: (date: LocalDate) -> String = { date -> "$date details" },
     levelOf: (count: Int) -> Int = GitGrassDefaults.levelThresholds,
+    selection: GitGrassSelection? = null,
     onCellClick: ((date: LocalDate, count: Int) -> Unit)? = null,
     onCellLongClick: ((date: LocalDate, count: Int) -> Unit)? = null,
 ) {
@@ -126,8 +130,8 @@ fun GitGrass(
         if (showStreak) calculateStreak(safeContributions, days, safeEnd) else null
     }
     val cellShape = remember(cellCornerRadius) { RoundedCornerShape(cellCornerRadius) }
-    val hasCellActions = onCellClick != null || onCellLongClick != null
-    val cellClickLabelKey = if (hasCellActions) cellClickLabel else null
+    val includeClickLabels = onCellClick != null
+    val cellClickLabelKey = if (includeClickLabels) cellClickLabel else null
     val renderGrid = remember(
         grid,
         safeContributions,
@@ -135,7 +139,7 @@ fun GitGrass(
         levelOf,
         cellContentDescription,
         cellClickLabelKey,
-        hasCellActions,
+        includeClickLabels,
     ) {
         buildRenderGrid(
             grid = grid,
@@ -144,7 +148,15 @@ fun GitGrass(
             levelOf = levelOf,
             cellContentDescription = cellContentDescription,
             cellClickLabel = cellClickLabel,
-            includeClickLabels = hasCellActions,
+            includeClickLabels = includeClickLabels,
+        )
+    }
+
+    val resolvedSelection = remember(selection, colors.text, cellSize) {
+        resolveSelection(
+            selection = selection,
+            fallbackOutlineColor = colors.text,
+            cellSize = cellSize,
         )
     }
 
@@ -159,17 +171,14 @@ fun GitGrass(
             .first()
         val cellSizePx = with(density) { cellSize.roundToPx() }
         val cellSpacingPx = with(density) { cellSpacing.roundToPx() }
-        val totalGridWidth =
-            (renderGrid.size * cellSizePx) + ((renderGrid.size - 1).coerceAtLeast(0) * cellSpacingPx)
-
-        if (totalGridWidth > viewportWidth) {
-            scrollState.scrollToItem(
-                index = renderGrid.lastIndex,
-                scrollOffset = cellSizePx - viewportWidth,
-            )
-        } else {
-            scrollState.scrollToItem(0)
-        }
+        scrollState.scrollToItem(
+            calculateInitialScrollIndex(
+                weekCount = renderGrid.size,
+                viewportWidthPx = viewportWidth,
+                cellSizePx = cellSizePx,
+                cellSpacingPx = cellSpacingPx,
+            ),
+        )
     }
 
     val weekLabelWidth = if (showWeekLabels) GitGrassDefaults.weekLabelWidth else 0.dp
@@ -188,39 +197,41 @@ fun GitGrass(
             Spacer(modifier = Modifier.height(GitGrassDefaults.yearLabelBottomSpacing))
         }
 
-        if (showMonthLabels) {
-            MonthRow(
-                weekCount = grid.size,
-                monthPositions = monthPositions,
-                monthLabels = monthLabels,
-                cellSize = cellSize,
-                cellSpacing = cellSpacing,
-                fontSize = labelFontSize,
-                textColor = colors.text,
-                scrollState = scrollState,
-                weekLabelWidth = weekLabelWidth,
-            )
-            Spacer(modifier = Modifier.height(GitGrassDefaults.monthRowBottomSpacing))
-        }
-
         Row {
             if (showWeekLabels) {
-                WeekLabelColumn(
-                    weekLabels = weekLabels,
-                    cellSize = cellSize,
-                    cellSpacing = cellSpacing,
-                    fontSize = labelFontSize,
-                    textColor = colors.text,
-                    modifier = Modifier.width(weekLabelWidth),
-                )
+                Column(modifier = Modifier.width(weekLabelWidth)) {
+                    if (showMonthLabels) {
+                        MonthLabelSlot(
+                            text = "",
+                            slotWidth = weekLabelWidth,
+                            fontSize = labelFontSize,
+                            textColor = colors.text,
+                        )
+                        Spacer(modifier = Modifier.height(GitGrassDefaults.monthRowBottomSpacing))
+                    }
+
+                    WeekLabelColumn(
+                        weekLabels = weekLabels,
+                        cellSize = cellSize,
+                        cellSpacing = cellSpacing,
+                        fontSize = labelFontSize,
+                        textColor = colors.text,
+                    )
+                }
             }
 
             GrassGridContent(
                 renderGrid = renderGrid,
+                monthPositions = monthPositions,
+                monthLabels = monthLabels,
+                showMonthLabels = showMonthLabels,
                 cellSize = cellSize,
                 cellSpacing = cellSpacing,
                 cellCornerRadius = cellCornerRadius,
+                labelFontSize = labelFontSize,
+                textColor = colors.text,
                 scrollState = scrollState,
+                selection = resolvedSelection,
                 onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
             )

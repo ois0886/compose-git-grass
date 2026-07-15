@@ -309,6 +309,39 @@ class GridUtilsTest {
         )
     }
 
+    // ── calculateInitialScrollIndex ────────────────────────────────────
+
+    @Test
+    fun `calculateInitialScrollIndex keeps newest whole weeks visible`() {
+        val index = calculateInitialScrollIndex(
+            weekCount = 53,
+            viewportWidthPx = 300,
+            cellSizePx = 24,
+            cellSpacingPx = 6,
+        )
+
+        assertEquals(44, index)
+    }
+
+    @Test
+    fun `calculateInitialScrollIndex returns zero when all weeks fit`() {
+        assertEquals(
+            0,
+            calculateInitialScrollIndex(
+                weekCount = 5,
+                viewportWidthPx = 300,
+                cellSizePx = 24,
+                cellSpacingPx = 6,
+            ),
+        )
+    }
+
+    @Test
+    fun `calculateInitialScrollIndex handles invalid dimensions`() {
+        assertEquals(0, calculateInitialScrollIndex(10, 0, 24, 6))
+        assertEquals(0, calculateInitialScrollIndex(10, 300, 0, 0))
+    }
+
     // ── calculateStreak ─────────────────────────────────────────────────
 
     @Test
@@ -407,17 +440,30 @@ class GridUtilsTest {
     }
 
     @Test
-    fun `createMonthLabels month boundary transition at week start`() {
+    fun `createMonthLabels places a midweek month boundary in the containing week`() {
         val days = generateDayList(
-            LocalDate.of(2025, 1, 27),
+            LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 2, 9),
         )
         val grid = buildGrid(days)
         val labels = createMonthLabels(grid)
 
-        val months = labels.map { it.second }
-        assertEquals(listOf(1, 2), months)
-        assertTrue(labels[1].first > labels[0].first)
+        val februaryWeek = grid.indexOfFirst { week ->
+            LocalDate.of(2025, 2, 1) in week
+        }
+        assertEquals(listOf(1, 2), labels.map { it.second })
+        assertEquals(februaryWeek, labels.last().first)
+    }
+
+    @Test
+    fun `createMonthLabels new month wins a collision in the first visible week`() {
+        val days = generateDayList(
+            LocalDate.of(2025, 1, 27),
+            LocalDate.of(2025, 2, 9),
+        )
+        val labels = createMonthLabels(buildGrid(days))
+
+        assertEquals(listOf(0 to 2), labels)
     }
 
     // ── calculateStreak (additional) ─────────────────────────────────

@@ -20,7 +20,7 @@ compose-git-grass 프로젝트의 코드 퀄리티 가이드라인.
 
 - **Public API는 최소화**한다. 외부에 노출할 필요가 없는 모든 것은 `internal`로 선언한다.
 - Public: `GitGrass`, `GitGrassColors`, `GitGrassDefaults`, `GitGrassStreakInfo`
-- Internal: UI 컴포넌트 (`YearLabel`, `MonthRow`, `GrassCell` 등), 유틸리티 함수 (`buildGrid`, `calculateStreak` 등)
+- Internal: UI 컴포넌트 (`YearLabel`, `MonthLabelSlot`, `GrassCell` 등), 유틸리티 함수 (`buildGrid`, `calculateStreak` 등)
 
 ### 데이터 클래스
 
@@ -77,7 +77,8 @@ fun GitGrass(...) {
 3. 스타일 (colors, cellSize, fontSize)
 4. UI 토글 (showYearLabel, showLegend)
 5. 텍스트 라벨 (streakMaxLabel, lessLabel)
-6. 람다/콜백 (levelOf, onCellClick, onCellLongClick)
+6. 매핑/제어 상태 (levelOf, selection)
+7. 람다/콜백 (onCellClick, onCellLongClick)
 ```
 
 ### remember 사용 규칙
@@ -156,10 +157,9 @@ UI 렌더링 (Composable + remember)
 ```
 GitGrass (루트 조율자)
 ├── YearLabel
-├── MonthRow (LazyListState 공유)
 ├── WeekLabelColumn
-├── GrassGridContent (LazyListState 공유)
-│   └── GrassWeekColumn (Canvas) → GrassCell (hit target)
+├── GrassGridContent (단일 LazyRow)
+│   └── MonthLabelSlot + GrassWeekColumn (Canvas) → GrassCell (hit target)
 ├── StreakSummary
 └── ColorLegend
 ```
@@ -287,11 +287,13 @@ val renderGrid = remember(grid, safeContributions, colors, levelOf) {
 
 ### Lazy 렌더링 우선
 
-주 단위처럼 반복 개수가 날짜 범위에 비례하는 UI는 eager `Row`보다 `LazyRow`를 우선한다. 월 라벨과 그리드는 같은 `LazyListState`를 공유해 정렬과 스크롤 동기화를 유지한다.
+주 단위처럼 반복 개수가 날짜 범위에 비례하는 UI는 eager `Row`보다 `LazyRow`를 우선한다. 월 라벨과 주별 Canvas는 같은 lazy item 안에 배치해 별도 상태 동기화 없이 정렬을 보장한다.
 
 ### Canvas와 Semantics 분리
 
 반복 셀의 시각 렌더링은 Canvas로 합치되, 접근성/클릭/롱클릭은 별도의 hit target 컴포저블로 유지한다. 사용자가 렌더러를 직접 선택하는 public 옵션은 실제 요구가 생기기 전까지 추가하지 않는다.
+
+선택 아웃라인처럼 자주 바뀌는 제어 상태는 `buildRenderGrid` 입력에 넣지 않는다. 보이는 Canvas에서 날짜를 비교해 그리며 hit target에는 `selected` semantics를 별도로 적용한다.
 
 ### Consumer Rules 범위 제한
 
@@ -566,7 +568,6 @@ fun GitGrass(...) {
     val grid = remember(...) { buildGrid(days, weekStartDay) }
     Column {
         YearLabel(...)
-        MonthRow(...)
         GrassGridContent(...)
     }
 }
@@ -592,8 +593,8 @@ fun GitGrass(...) {
 // O: 컴포지션 — 작은 컴포저블 조합
 GitGrass (루트 조율자)
 ├── YearLabel          // 독립 컴포넌트
-├── MonthRow           // LazyListState를 파라미터로 주입
-├── GrassGridContent   // 렌더링 데이터와 LazyListState를 파라미터로 주입
+├── WeekLabelColumn    // 고정 요일 라벨
+├── GrassGridContent   // 월 라벨과 주별 Canvas를 하나의 LazyRow로 구성
 └── ColorLegend        // 독립 컴포넌트
 
 // X: 상속 기반 접근

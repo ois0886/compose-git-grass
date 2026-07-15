@@ -108,19 +108,26 @@ internal fun weekDaysOrdered(weekStartDay: DayOfWeek): List<DayOfWeek> {
  * follows [java.time.LocalDate.getMonthValue] (1=Jan, 12=Dec).
  */
 internal fun createMonthLabels(grid: Grid): MonthPositions {
-    val result = mutableListOf<Pair<Int, Int>>()
-    var lastMonth = -1
+    if (grid.isEmpty()) return emptyList()
+
+    val positions = linkedMapOf<Int, Int>()
+    val firstVisibleWeek = grid.indexOfFirst { week -> week.any { it != null } }
+    if (firstVisibleWeek == -1) return emptyList()
+
+    val firstVisibleDay = grid[firstVisibleWeek].firstNotNullOf { it }
+    positions[firstVisibleWeek] = firstVisibleDay.monthValue
 
     for ((weekIndex, week) in grid.withIndex()) {
-        val firstDay = week.firstNotNullOfOrNull { it } ?: continue
-        val month = firstDay.monthValue
-        if (month != lastMonth) {
-            result.add(weekIndex to month)
-            lastMonth = month
+        val firstDayOfMonth = week.firstNotNullOfOrNull { day ->
+            day?.takeIf { it.dayOfMonth == 1 }
+        }
+        if (firstDayOfMonth != null) {
+            // A new month wins when the first visible week contains two months.
+            positions[weekIndex] = firstDayOfMonth.monthValue
         }
     }
 
-    return result
+    return positions.map { (weekIndex, month) -> weekIndex to month }
 }
 
 /**
@@ -136,6 +143,30 @@ internal fun formatYearLabel(start: LocalDate, end: LocalDate): String {
         "${start.year} - ${end.year}"
     }
 }
+
+/**
+ * Returns the first whole week column to show while keeping the newest week visible.
+ *
+ * Snapping to a whole item avoids clipping a month label at the leading viewport edge.
+ */
+internal fun calculateInitialScrollIndex(
+    weekCount: Int,
+    viewportWidthPx: Int,
+    cellSizePx: Int,
+    cellSpacingPx: Int,
+): Int {
+    if (weekCount <= 0 || viewportWidthPx <= 0) return 0
+
+    val itemStridePx = cellSizePx + cellSpacingPx
+    if (itemStridePx <= 0) return 0
+
+    val visibleWeekCount = (
+        ((viewportWidthPx + cellSpacingPx) / itemStridePx) - MONTH_LABEL_GUARD_WEEKS
+        ).coerceAtLeast(1)
+    return (weekCount - visibleWeekCount).coerceAtLeast(0)
+}
+
+private const val MONTH_LABEL_GUARD_WEEKS = 1
 
 /**
  * Calculates max and current contribution streaks in a single forward pass.

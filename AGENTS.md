@@ -53,7 +53,7 @@ Uses [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/grad
 
 Maven coordinates: `io.github.ois0886:compose-git-grass:<version>`
 
-Current release: `1.1.1`
+Current release: `1.2.0`
 
 ### 로컬 배포 (수동)
 
@@ -129,7 +129,8 @@ git push origin v<version>
 - `library/src/main/java/com/inseong/gitgrass/`
   - `GitGrass.kt` — 메인 컴포저블 (public API)
   - `GitGrassColors.kt` — 색상 스킴 데이터 클래스
-  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthRow, WeekLabelColumn, GrassGridContent, Canvas 기반 GrassWeekColumn, GrassCell hit target, StreakSummary, ColorLegend)
+  - `GitGrassSelection.kt` — 제어형 선택 상태 public API와 선택값 정규화
+  - `GitGrassComponents.kt` — 내부 UI 컴포넌트 (YearLabel, MonthLabelSlot, WeekLabelColumn, 단일 LazyRow 기반 GrassGridContent, Canvas 기반 GrassWeekColumn, GrassCell hit target, StreakSummary, ColorLegend)
   - `GitGrassDefaults.kt` — 기본값 및 팩토리 (색상, 라벨, 크기, 로케일, 레이아웃 상수)
   - `GridUtils.kt` — 순수 함수 유틸리티 (normalizeDateRange, normalizeContributions, generateDayList, buildGrid, dayIndexInWeek, weekDaysOrdered, createMonthLabels, formatYearLabel, calculateStreak)
   - `RenderData.kt` — 셀별 count/color/접근성 라벨을 미리 계산하는 렌더링 데이터 유틸리티
@@ -144,8 +145,8 @@ git push origin v<version>
   - `RenderDataTest.kt` — 렌더링 데이터 사전 계산 검증
   - `GridBenchmarkTest.kt` — 성능 벤치마크 (6개)
 - `library/src/androidTest/` — Compose UI 인스트루먼트 테스트
-  - `GrassCellTest.kt` — 셀 클릭/롱클릭 콜백 검증
-  - `LabelRenderingTest.kt` — 월 라벨, 주 라벨 렌더링 검증
+  - `GrassCellTest.kt` — 셀 클릭/롱클릭, 선택 semantics 검증
+  - `LabelRenderingTest.kt` — 단일 LazyRow 월 라벨, 주 시작일별 라벨 렌더링 검증
 
 ## Code Quality
 
@@ -226,3 +227,4 @@ docs: AGENTS.md 워크플로우 규칙 추가
 - 2026-04-10: CI `ui-test` 실패 원인(`GrassCellTest`의 `performLongClick` 참조 오류) 수정 후, GitHub Actions 런 #24225465922 전체 잡 통과를 확인함.
 - 2026-04-10: CI `ui-test` 안정성 강화를 위해 잡 타임아웃(30분)과 에뮬레이터 `-no-metrics` 옵션을 추가함.
 - 2026-06-11: `v1.1.1` 릴리즈 기준으로 README/CHANGELOG/AGENTS/CLAUDE 문서의 버전 및 릴리즈 절차 표기를 재점검함.
+- 2026-07-15: `v1.2.0` 릴리즈 기준으로 제어형 선택 API, 단일 LazyRow 렌더링, 샘플 쇼케이스와 README 라이트/다크 이미지를 반영함.
