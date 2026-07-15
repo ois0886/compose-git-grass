@@ -77,6 +77,21 @@ object GitGrassDefaults {
     /** English weekday labels, Monday-first order. */
     val weekLabels: List<String> = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
+    private val weekLabelsByStartDay: Map<DayOfWeek, List<String>> =
+        DayOfWeek.entries.associateWith { weekStartDay ->
+            weekDaysOrdered(weekStartDay).map { day -> weekLabels[day.value - 1] }
+        }
+
+    /**
+     * Returns the default English weekday labels ordered from [weekStartDay].
+     *
+     * Unlike [localizedWeekLabels], this returns cached labels and is suitable for a
+     * composable default argument.
+     */
+    fun weekLabelsFor(weekStartDay: DayOfWeek = DayOfWeek.MONDAY): List<String> {
+        return weekLabelsByStartDay.getValue(weekStartDay)
+    }
+
     /**
      * Returns localized month labels using the device's default locale.
      *
@@ -108,6 +123,9 @@ object GitGrassDefaults {
     val cellSize: Dp = 12.dp
     val cellSpacing: Dp = 3.dp
     val cellCornerRadius: Dp = 2.dp
+
+    /** Default inset outline width for a selected contribution cell. */
+    val selectionOutlineWidth: Dp = 2.dp
 
     val labelFontSize: TextUnit = 10.sp
     val yearLabelFontSize: TextUnit = 13.sp

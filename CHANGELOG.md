@@ -7,8 +7,27 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-15
+
+### Added
+- `GitGrassSelection`: 날짜, 인셋 아웃라인 색상/두께를 담는 제어형 선택 상태 API 추가
+- `GitGrass.selection`: 앱 상태로 선택 셀을 강조하고 `selected` semantics를 노출하는 옵션 추가
+- `GitGrassDefaults.weekLabelsFor()`: 주 시작일에 맞춰 캐시된 영어 요일 라벨을 반환하는 헬퍼 추가
+- 선택 해석, 월 경계, 완전한 주 단위 초기 스크롤 및 샘플 통계 테스트 추가
+
 ### Changed
-- `1.1.1` 릴리즈 기준으로 README/AGENTS/CLAUDE 문서의 현재 버전 표기와 릴리즈 절차 안내를 정리
+- 월 라벨과 주별 Canvas를 하나의 `LazyRow` 항목으로 통합해 스크롤 동기화 구조 단순화
+- 월 라벨을 매월 1일이 속한 주에 배치하고 첫 주 충돌 시 새 월을 우선하도록 개선
+- 최신 날짜 자동 스크롤을 월 라벨이 잘리지 않는 완전한 주 열 기준으로 변경
+- `weekStartDay` 변경 시 기본 영어 요일 라벨도 같은 순서로 자동 정렬
+- 선택 변경 시 render grid를 재계산하지 않고 보이는 Canvas와 semantics만 갱신
+- 샘플 앱을 GitHub 라이트/다크 대표 데모와 `Layout`/`Localization`/`Themes`/`Levels` 갤러리로 재구성
+- README 설치/API/선택 예제와 실제 에뮬레이터 라이트·다크 이미지를 1.2.0 기준으로 갱신
+- README/AGENTS/CLAUDE/CODE_QUALITY의 버전과 내부 구조 설명 동기화
+
+### Fixed
+- 롱클릭 전용 셀에 빈 클릭 액션이 함께 노출되던 접근성 semantics 수정
+- 일요일 시작 그래프가 기본 월요일 순서 라벨을 표시하던 불일치 수정
 
 ## [1.1.1] - 2026-06-11
 
@@ -115,7 +134,8 @@
 - 월 라벨 위치 결정 (`createMonthLabels`)
 - 연도 라벨 포맷팅 (`formatYearLabel`)
 
-[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/ois0886/compose-git-grass/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ois0886/compose-git-grass/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/ois0886/compose-git-grass/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ois0886/compose-git-grass/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ois0886/compose-git-grass/compare/v0.1.1...v1.0.0

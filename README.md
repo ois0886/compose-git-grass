@@ -9,7 +9,8 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 GitHub 잔디(
 [![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://developer.android.com/about/versions/oreo)
 
 <p align="center">
-  <img src="screenshots/sample.png" width="500" alt="compose-git-grass sample" />
+  <img src="screenshots/sample.png" width="46%" alt="compose-git-grass light showcase with a selected contribution day" />
+  <img src="screenshots/sample-dark.png" width="46%" alt="compose-git-grass dark showcase with a selected contribution day" />
 </p>
 
 ## Why?
@@ -25,16 +26,16 @@ GitHub의 잔디 그래프는 활동량을 한눈에 보여주는 훌륭한 시�
 
 ## Setup
 
-현재 최신 릴리즈는 `1.1.1`입니다.
+현재 최신 릴리즈는 `1.2.0`입니다.
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-git-grass:1.1.1")
+    implementation("io.github.ois0886:compose-git-grass:1.2.0")
 }
 ```
 
-> **1.0.0에서 마이그레이션**: 새 파라미터(`cellContentDescription`, `cellClickLabel`)가 추가되었으며 모두 기본값이 있어 기존 코드가 그대로 동작합니다. `GitGrassColors.border`는 deprecated 되었습니다 (2.0.0에서 제거 예정).
+> **1.1.x에서 업그레이드**: `selection` 파라미터가 기본값과 함께 추가되어 기존 호출은 그대로 동작합니다. 일요일 시작 그래프의 기본 요일 라벨은 이제 자동으로 일요일부터 정렬됩니다. `GitGrassColors.border`는 계속 deprecated 상태이며 2.0.0에서 제거될 예정입니다.
 
 ## Quick Start
 
@@ -45,6 +46,21 @@ GitGrass(
         LocalDate.now() to 5,
         LocalDate.now().minusDays(1) to 3,
     )
+)
+```
+
+```kotlin
+// 제어 가능한 날짜 선택
+var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+
+GitGrass(
+    contributions = data,
+    selection = selectedDate?.let { date ->
+        GitGrassSelection(date = date)
+    },
+    onCellClick = { date, _ ->
+        selectedDate = date
+    },
 )
 ```
 
@@ -66,6 +82,7 @@ GitGrass(
 대부분의 1년 단위 그래프는 기본 설정만으로 충분히 가볍게 동작합니다. 여러 개의 그래프를 한 화면에 렌더링하거나 5년 이상의 긴 범위를 표시한다면 아래 원칙을 권장합니다:
 
 - 별도 `renderMode`를 고를 필요는 없습니다. 내부에서 주 단위 lazy 렌더링과 Canvas 기반 셀 그리기를 자동으로 사용합니다.
+- 월 라벨과 잔디 셀은 하나의 `LazyRow`에서 함께 구성되므로 별도의 스크롤 동기화 비용이 없습니다.
 - `contributions`, `startDate`, `endDate`, 로케일 라벨, 커스텀 색상 팔레트는 `remember`나 ViewModel 상태로 안정적으로 전달하세요.
 - 필요 없는 보조 UI는 `showMonthLabels`, `showStreak`, `showLegend`를 `false`로 꺼두면 해당 계산과 렌더링 비용을 줄일 수 있습니다.
 - 매 리컴포지션마다 `LocalDate.now()`, `localizedMonthLabels()`, `GitGrassColors(...)`를 새로 만들기보다 한 번 계산한 값을 재사용하세요.
@@ -86,6 +103,29 @@ GitGrass(
 ```
 
 ## Customization
+
+### Controlled Selection (1.2.0 신규)
+
+`GitGrass`는 선택 상태를 내부에서 변경하지 않습니다. 앱 상태를 [GitGrassSelection](#gitgrassselection)으로 전달하고 클릭 콜백에서 갱신하세요.
+
+```kotlin
+var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+GitGrass(
+    contributions = data,
+    selection = GitGrassSelection(
+        date = selectedDate,
+        outlineColor = Color.Blue,
+        outlineWidth = 2.dp,
+    ),
+    onCellClick = { date, count ->
+        selectedDate = date
+        println("$date: $count")
+    },
+)
+```
+
+선택 날짜가 표시 범위 밖이면 강조하지 않습니다. 선택 변경만으로 스크롤 위치가 바뀌지는 않으며, `outlineColor = Color.Unspecified`일 때는 현재 색상 스킴의 `text` 색상을 사용합니다.
 
 ### Colors
 
@@ -153,9 +193,10 @@ GitGrass(
     contributions = data,
     weekStartDay = DayOfWeek.SUNDAY,
     startDate = GitGrassDefaults.startDate(DayOfWeek.SUNDAY),
-    weekLabels = GitGrassDefaults.localizedWeekLabels(DayOfWeek.SUNDAY),
 )
 ```
+
+영어 기본 라벨은 `weekStartDay`를 자동으로 따릅니다. 로컬라이즈된 라벨이 필요할 때만 `GitGrassDefaults.localizedWeekLabels(DayOfWeek.SUNDAY)`를 전달하면 됩니다.
 
 ### Long Press (1.0.0 신규)
 
@@ -204,7 +245,7 @@ GitGrass(
 | `weekStartDay` | `DayOfWeek` | MONDAY | 주 시작 요일 |
 | `colors` | `GitGrassColors` | GitHub 라이트 | 색상 스킴 |
 | `monthLabels` | `List<String>` | 영어 | 월 이름 (인덱스 0 미사용) |
-| `weekLabels` | `List<String>` | 영어 | 요일 이름 |
+| `weekLabels` | `List<String>` | 주 시작일 기준 영어 | 요일 이름 |
 | `cellSize` | `Dp` | 12.dp | 셀 크기 |
 | `cellSpacing` | `Dp` | 3.dp | 셀 간격 |
 | `cellCornerRadius` | `Dp` | 2.dp | 셀 모서리 반경 |
@@ -221,6 +262,7 @@ GitGrass(
 | `cellContentDescription` | `(LocalDate, Int) -> String` | `"$date: $count"` | 셀 접근성 텍스트 (1.1.0) |
 | `cellClickLabel` | `(LocalDate) -> String` | `"$date details"` | 셀 클릭 접근성 라벨 (1.1.0) |
 | `levelOf` | `(Int) -> Int` | 0/1-3/4-6/7-9/10+ | 기여 횟수 → 레벨 매핑 |
+| `selection` | `GitGrassSelection?` | null | 제어 가능한 선택 셀과 인셋 아웃라인 (1.2.0) |
 | `onCellClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 탭 콜백 |
 | `onCellLongClick` | `((LocalDate, Int) -> Unit)?` | null | 셀 롱프레스 콜백 |
 
@@ -232,6 +274,14 @@ GitGrass(
 | `levels` | 기여 레벨별 색상 리스트 (개수 자유) |
 | `text` | 라벨 텍스트 색상 |
 | `border` | ~~셀 테두리 색상~~ (deprecated, 2.0.0에서 제거 예정) |
+
+### `GitGrassSelection`
+
+| Field | Default | Description |
+|---|---|---|
+| `date` | *필수* | 선택해 강조할 날짜 |
+| `outlineColor` | `Color.Unspecified` | 인셋 아웃라인 색상 (`colors.text`로 대체) |
+| `outlineWidth` | 2.dp | 인셋 아웃라인 두께 (셀 크기에 맞춰 안전하게 제한) |
 
 ### Forgiving Input
 
@@ -246,6 +296,8 @@ GitGrass(
 
 - 모든 셀에 `contentDescription` 제공 (스크린 리더 지원)
 - 클릭 가능한 셀에 `Role.Button` 및 `onClickLabel` 설정
+- 선택된 셀에 `selected` semantics 제공
+- 롱클릭 전용 셀에는 빈 클릭 액션 없이 롱클릭 semantics만 제공
 - 그래프 루트에 "Contribution graph" semantics 적용
 - 범례 셀에 "Level 0", "Level 1" 등 접근성 라벨 제공
 - `cellContentDescription`, `cellClickLabel` 파라미터로 접근성 텍스트 커스터마이징 가능 (1.1.0)
@@ -265,10 +317,11 @@ GitGrass(
 - **유연한 색상 레벨** - 고정된 `level1`~`level4` 대신 `levels: List<Color>`를 사용합니다. 3단계든, 5단계든, 10단계든 자유롭게 지정할 수 있습니다.
 - **픽셀 단위 월 라벨 정렬** - 월 라벨이 그리드와 동일한 `Arrangement.spacedBy` + 고정 너비 슬롯 구조를 사용하여, 어떤 셀 크기에서도 정확하게 정렬됩니다.
 - **자동 최적화 렌더링** - 긴 날짜 범위에서는 주 단위 `LazyRow`가 화면에 필요한 열만 구성하고, 셀 색상은 Canvas로 그려 반복 노드 비용을 줄입니다.
-- **공유 LazyListState** - 월 라벨 행과 그리드가 하나의 `LazyListState`를 공유하여 가로 스크롤 시 항상 동기화됩니다.
-- **순수 함수 & 테스트** - 그리드/스트릭 계산 로직이 부수효과 없는 순수 함수로 구현되어 있으며, 60+ 유닛 테스트와 Compose UI 테스트가 그리드 생성, 스트릭 계산, 색상 매핑, 엣지 케이스, UI 인터랙션을 검증합니다.
+- **단일 LazyRow** - 월 라벨과 주별 Canvas를 같은 lazy item에서 구성해 스크롤 정합성을 구조적으로 보장합니다.
+- **선택 렌더링 분리** - 선택 아웃라인은 render grid를 다시 만들지 않고 보이는 Canvas와 semantics만 갱신합니다.
+- **순수 함수 & 테스트** - 그리드/스트릭/월 경계/초기 스크롤 계산이 순수 함수로 구현되어 있으며, 유닛 테스트와 Compose UI 테스트가 엣지 케이스와 인터랙션을 검증합니다.
 - **접근성** - 모든 셀에 contentDescription, semantics 적용으로 스크린 리더를 지원합니다.
-- **오늘 날짜로 자동 스크롤** - `LaunchedEffect`로 첫 컴포지션 시 가장 최근 날짜(오른쪽 끝)로 자동 스크롤됩니다.
+- **완전한 주 단위 자동 스크롤** - 첫 컴포지션에서 최신 날짜를 유지하면서 시작 월 라벨이 잘리지 않는 완전한 주 열로 스냅합니다.
 
 ## Requirements
 

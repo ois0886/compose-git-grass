@@ -1,5 +1,10 @@
 package com.inseong.gitgrass
 
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHasNoClickAction
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -97,5 +102,45 @@ class GrassCellTest {
 
         composeTestRule.onNodeWithContentDescription("$date: $count")
             .assertExists()
+    }
+
+    @Test
+    fun gitGrass_selectedCell_exposesSelectedSemantics() {
+        val date = LocalDate.of(2025, 6, 15)
+
+        composeTestRule.setContent {
+            GitGrass(
+                contributions = mapOf(date to 4),
+                startDate = date,
+                endDate = date,
+                selection = GitGrassSelection(date = date),
+                showYearLabel = false,
+                showWeekLabels = false,
+                showMonthLabels = false,
+                showLegend = false,
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("$date: 4")
+            .assertIsSelected()
+    }
+
+    @Test
+    fun grassCell_longClickOnly_hasNoClickAction() {
+        val description = "Long-click only"
+
+        composeTestRule.setContent {
+            GrassCell(
+                size = GitGrassDefaults.cellSize,
+                contentDescriptionText = description,
+                clickLabelText = null,
+                onClick = null,
+                onLongClick = {},
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription(description)
+            .assertHasNoClickAction()
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick))
     }
 }

@@ -162,4 +162,25 @@ class GitGrassDefaultsTest {
         assertEquals("Mon", GitGrassDefaults.weekLabels[0])
         assertEquals("Sun", GitGrassDefaults.weekLabels[6])
     }
+
+    @Test
+    fun `weekLabelsFor Sunday-start returns Sunday first`() {
+        val labels = GitGrassDefaults.weekLabelsFor(DayOfWeek.SUNDAY)
+
+        assertEquals("Sun", labels.first())
+        assertEquals("Sat", labels.last())
+    }
+
+    @Test
+    fun `weekLabelsFor supports every week start day`() {
+        for (weekStartDay in DayOfWeek.entries) {
+            val labels = GitGrassDefaults.weekLabelsFor(weekStartDay)
+
+            assertEquals(7, labels.size)
+            assertEquals(
+                weekStartDay.getDisplayName(java.time.format.TextStyle.SHORT, Locale.ENGLISH),
+                labels.first(),
+            )
+        }
+    }
 }

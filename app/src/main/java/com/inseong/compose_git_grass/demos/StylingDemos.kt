@@ -3,153 +3,128 @@ package com.inseong.compose_git_grass.demos
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.inseong.compose_git_grass.components.DemoBlock
 import com.inseong.compose_git_grass.components.SectionCard
 import com.inseong.gitgrass.GitGrass
 import com.inseong.gitgrass.GitGrassColors
+import com.inseong.gitgrass.GitGrassDefaults
 import java.time.LocalDate
 
 @Composable
-internal fun CustomCellSizingDemo(data: Map<LocalDate, Int>) {
-    val dateRange = remember {
-        val end = LocalDate.now()
-        end.minusMonths(3) to end
+internal fun ThemeGallery(data: Map<LocalDate, Int>) {
+    val endDate = remember { LocalDate.now() }
+    val startDate = remember(endDate) { endDate.minusMonths(5) }
+    val blueColors = remember {
+        GitGrassColors(
+            empty = Color(0xFFEFF6FF),
+            levels = listOf(
+                Color(0xFFBFDBFE),
+                Color(0xFF60A5FA),
+                Color(0xFF2563EB),
+                Color(0xFF1E3A8A),
+            ),
+            text = Color(0xFF1E3A8A),
+        )
     }
 
     SectionCard(
-        title = "Custom Cell Sizing",
-        description = "Large rounded cells vs tiny dense cells",
+        title = "Themes",
+        description = "Use the GitHub presets or provide any number of custom color levels.",
+        badge = "COLOR",
     ) {
-        Text(
-            text = "Large (20dp, radius 10dp)",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        GitGrass(
-            contributions = data,
-            modifier = Modifier.fillMaxWidth(),
-            startDate = dateRange.first,
-            endDate = dateRange.second,
-            cellSize = 20.dp,
-            cellSpacing = 4.dp,
-            cellCornerRadius = 10.dp,
-            labelFontSize = 14.sp,
-        )
+        DemoBlock(
+            title = "GitHub dark",
+            description = "The built-in dark palette on its native canvas.",
+        ) {
+            Surface(
+                color = Color(0xFF0D1117),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                GitGrass(
+                    contributions = data,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    startDate = startDate,
+                    endDate = endDate,
+                    colors = GitGrassDefaults.darkColors(),
+                    showYearLabel = false,
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Tiny (8dp, radius 0dp)",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        GitGrass(
-            contributions = data,
-            modifier = Modifier.fillMaxWidth(),
-            cellSize = 8.dp,
-            cellSpacing = 1.dp,
-            cellCornerRadius = 0.dp,
-            labelFontSize = 8.sp,
-        )
+        DemoBlock(
+            title = "Blue scale",
+            description = "A custom four-level palette without Material dependencies.",
+        ) {
+            GitGrass(
+                contributions = data,
+                modifier = Modifier.fillMaxWidth(),
+                startDate = startDate,
+                endDate = endDate,
+                colors = blueColors,
+                showYearLabel = false,
+            )
+        }
     }
 }
 
 @Composable
-internal fun CustomLevelMappingDemo(data: Map<LocalDate, Int>) {
-    val dateRange = remember {
-        val end = LocalDate.now()
-        end.minusMonths(3) to end
-    }
+internal fun LevelsGallery(data: Map<LocalDate, Int>) {
+    val endDate = remember { LocalDate.now() }
+    val startDate = remember(endDate) { endDate.minusMonths(4) }
 
     SectionCard(
-        title = "Custom Level Mapping",
-        description = "Binary: any contribution = max level",
+        title = "Levels",
+        description = "Map domain values to visual intensity with a small pure function.",
+        badge = "MAPPING",
     ) {
-        GitGrass(
-            contributions = data,
-            modifier = Modifier.fillMaxWidth(),
-            startDate = dateRange.first,
-            endDate = dateRange.second,
-            levelOf = { count -> if (count > 0) 4 else 0 },
-        )
-    }
-}
+        DemoBlock(
+            title = "Binary activity",
+            description = "Every active day uses the strongest level.",
+        ) {
+            GitGrass(
+                contributions = data,
+                modifier = Modifier.fillMaxWidth(),
+                startDate = startDate,
+                endDate = endDate,
+                showYearLabel = false,
+                levelOf = { count -> if (count > 0) 4 else 0 },
+            )
+        }
 
-@Suppress("DEPRECATION")
-@Composable
-internal fun CustomColorsDemo(data: Map<LocalDate, Int>) {
-    val dateRange = remember {
-        val end = LocalDate.now()
-        end.minusMonths(6) to end
-    }
-    val blueOceanColors = remember {
-        GitGrassColors(
-            empty = Color(0xFFE8EAF6),
-            levels = listOf(
-                Color(0xFFBBDEFB),
-                Color(0xFF64B5F6),
-                Color(0xFF1E88E5),
-                Color(0xFF0D47A1),
-            ),
-            text = Color(0xFF1A237E),
-            border = Color(0xFFC5CAE9),
-        )
-    }
-    val warmSunsetColors = remember {
-        GitGrassColors(
-            empty = Color(0xFFFFF3E0),
-            levels = listOf(
-                Color(0xFFFFCC80),
-                Color(0xFFFF9800),
-                Color(0xFFF57C00),
-                Color(0xFFE65100),
-            ),
-            text = Color(0xFFBF360C),
-            border = Color(0xFFFFE0B2),
-        )
-    }
+        Spacer(modifier = Modifier.height(24.dp))
 
-    SectionCard(
-        title = "Custom Colors",
-        description = "Blue ocean & warm sunset color palettes",
-    ) {
-        Text(
-            text = "Blue Ocean",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        GitGrass(
-            contributions = data,
-            modifier = Modifier.fillMaxWidth(),
-            startDate = dateRange.first,
-            endDate = dateRange.second,
-            colors = blueOceanColors,
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Warm Sunset",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        GitGrass(
-            contributions = data,
-            modifier = Modifier.fillMaxWidth(),
-            startDate = dateRange.first,
-            endDate = dateRange.second,
-            colors = warmSunsetColors,
-        )
+        DemoBlock(
+            title = "Wide thresholds",
+            description = "A slower ramp for higher-volume activity data.",
+        ) {
+            GitGrass(
+                contributions = data,
+                modifier = Modifier.fillMaxWidth(),
+                startDate = startDate,
+                endDate = endDate,
+                showYearLabel = false,
+                levelOf = { count ->
+                    when {
+                        count <= 0 -> 0
+                        count < 5 -> 1
+                        count < 10 -> 2
+                        count < 15 -> 3
+                        else -> 4
+                    }
+                },
+            )
+        }
     }
 }

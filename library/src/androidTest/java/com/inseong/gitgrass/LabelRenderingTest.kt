@@ -1,6 +1,5 @@
 package com.inseong.gitgrass
 
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -14,25 +13,15 @@ class LabelRenderingTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun monthRow_rendersVisibleMonthLabels() {
-        val days = generateDayList(
-            LocalDate.of(2025, 1, 1),
-            LocalDate.of(2025, 3, 31),
-        )
-        val grid = buildGrid(days)
-        val monthPositions = createMonthLabels(grid)
-
+    fun gitGrass_rendersVisibleMonthLabelsInsideGrid() {
         composeTestRule.setContent {
-            MonthRow(
-                weekCount = grid.size,
-                monthPositions = monthPositions,
-                monthLabels = GitGrassDefaults.monthLabels,
-                cellSize = GitGrassDefaults.cellSize,
-                cellSpacing = GitGrassDefaults.cellSpacing,
-                fontSize = GitGrassDefaults.labelFontSize,
-                textColor = GitGrassDefaults.colors().text,
-                scrollState = rememberLazyListState(),
-                weekLabelWidth = GitGrassDefaults.weekLabelWidth,
+            GitGrass(
+                contributions = emptyMap(),
+                startDate = LocalDate.of(2025, 1, 1),
+                endDate = LocalDate.of(2025, 1, 15),
+                showYearLabel = false,
+                showWeekLabels = false,
+                showLegend = false,
             )
         }
 
@@ -56,5 +45,25 @@ class LabelRenderingTest {
         composeTestRule.onNodeWithText("Wed").assertIsDisplayed()
         composeTestRule.onNodeWithText("Fri").assertIsDisplayed()
         composeTestRule.onNodeWithText("Sun").assertIsDisplayed()
+    }
+
+    @Test
+    fun gitGrass_defaultWeekLabels_followSundayWeekStart() {
+        val date = LocalDate.of(2025, 1, 5)
+
+        composeTestRule.setContent {
+            GitGrass(
+                contributions = emptyMap(),
+                startDate = date,
+                endDate = date.plusDays(6),
+                weekStartDay = java.time.DayOfWeek.SUNDAY,
+                showYearLabel = false,
+                showMonthLabels = false,
+                showLegend = false,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Sun").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Mon").assertDoesNotExist()
     }
 }
