@@ -70,6 +70,7 @@ jobs:
         with:
           name: api-docs
           path: library/build/dokka/html/
+          if-no-files-found: error
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v6
