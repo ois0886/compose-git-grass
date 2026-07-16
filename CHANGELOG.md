@@ -7,6 +7,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Dokka 2.2.0으로 업그레이드해 AGP 9 내장 Kotlin 소스셋을 문서화하고, API 문서 artifact 누락 시 Release 워크플로가 실패하도록 검증 강화
+
 ## [1.2.0] - 2026-07-15
 
 ### Added

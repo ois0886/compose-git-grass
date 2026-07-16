@@ -118,7 +118,7 @@ git push origin v<version>
 
 - **JaCoCo**: 코드 커버리지 측정 (`./gradlew :library:jacocoTestReport`) + 임계값 검증 80% (`./gradlew :library:jacocoCoverageVerification`)
 - **Android Lint**: 정적 분석 (`./gradlew :library:lint`)
-- **Dokka 2.0**: API 문서 생성 (`./gradlew :library:dokkaGenerate`)
+- **Dokka 2.2**: AGP 9 내장 Kotlin 소스셋 기반 API 문서 생성 (`./gradlew :library:dokkaGenerate`)
 - **ProGuard Consumer Rules**: `library/consumer-rules.pro`에 public API 보호 규칙과 패키지 범위 Compose keep 규칙 정의
 - **성능 벤치마크**: `GridBenchmarkTest.kt`에서 대량 데이터(1000~3650일) 성능 검증
 - **Compose Compiler Reports**: 필요 시 `-PcomposeCompilerReports=true`로 metrics/reports 생성

@@ -345,7 +345,7 @@ internal fun StreakSummary(
 /**
  * Color legend showing "Less ↔ More" with gradient cells.
  *
- * Displays: [lessLabel] [empty] [level1] [level2] ... [levelN] [moreLabel]
+ * Displays [lessLabel], the empty color, each level from low to high, and [moreLabel].
  */
 @Composable
 internal fun ColorLegend(
